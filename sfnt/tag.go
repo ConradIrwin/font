@@ -16,7 +16,7 @@ var (
 	// TagName represents the 'name' table, which contains font name information
 	TagName = NamedTag("name")
 
-	// TypeMSTrueType is the first four bytes of an OpenType file containing a TrueType font
+	// TypeTrueType is the first four bytes of an OpenType file containing a TrueType font
 	TypeTrueType = Tag{0x00010000}
 	// TypeAppleTrueType is the first four bytes of an OpenType file containing a TrueType font
 	// (specifically one designed for Apple products, it's recommended to use TypeTrueType instead)
@@ -27,7 +27,7 @@ var (
 	// as specified by OpenType
 	TypeOpenType = NamedTag("OTTO")
 
-	// SignatureWOFF if the magic number at the start of a wOFF file.
+	// SignatureWoff if the magic number at the start of a wOFF file.
 	SignatureWoff = NamedTag("wOFF")
 )
 

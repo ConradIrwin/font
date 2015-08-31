@@ -65,8 +65,16 @@ func (font *Font) HasTable(tag Tag) bool {
 	return ok
 }
 
+// AddTable adds a table to the font. If a table with the
+// given tag is already present, it will be overwritten.
 func (font *Font) AddTable(tag Tag, table Table) {
 	font.tables[tag] = table
+}
+
+// RemoveTable removes a table from the font. If the table
+// doesn't exist, this method will do nothing.
+func (font *Font) RemoveTable(tag Tag) {
+	delete(font.tables, tag)
 }
 
 // Type represents the kind of glyphs in this font.
@@ -90,13 +98,16 @@ func (font *Font) String() string {
 	return str
 }
 
-// Head returns the table corresponding to the 'head' tag.
+// HeadTable returns the table corresponding to the 'head' tag.
+// This method will panic if the font does not have this table,
+// or if it is not an instance of TableHead.
 func (font *Font) HeadTable() *TableHead {
 	return font.tables[TagHead].(*TableHead)
 }
 
-// Name returns the table corresponding to the 'name' tag.
-// This method will panic if the font does not have this table.
+// NameTable returns the table corresponding to the 'name' tag.
+// This method will panic if the font does not have this table,
+// or if it is not an instance of TableName.
 func (font *Font) NameTable() *TableName {
 	return font.tables[TagName].(*TableName)
 }
@@ -112,6 +123,7 @@ func (font *Font) checkSum() uint32 {
 	return total
 }
 
+// New returns an empty Font. It has only an empty 'head' table.
 func New(scalerType Tag) *Font {
 	font := &Font{
 		scalerType,

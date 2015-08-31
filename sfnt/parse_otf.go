@@ -1,5 +1,9 @@
-// package sfnt provides support for sfnt based font formats.
-// At the moment the only thing that is implemented are decoders and encoders for .otf/.ttf
+// Package sfnt provides support for sfnt based font formats.
+//
+// This includes OpenType, TrueType, wOFF and EOT (though EOT is currently unimplemented).
+//
+// Usually you will want to Parse a font, make modifications, and then output the modified
+// font. If you're really brave, you can build a New Font from scratch.
 package sfnt
 
 import (

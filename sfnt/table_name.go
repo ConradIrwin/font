@@ -8,6 +8,10 @@ import (
 	"strconv"
 )
 
+// TableName represents the OpenType 'name' table. This contains
+// human-readable meta-data about the font, for example the Author
+// and Copyright.
+// https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6name.html
 type TableName struct {
 	bytes []byte
 }
@@ -19,10 +23,10 @@ type nameHeader struct {
 }
 
 type nameRecord struct {
-	PlatformId         uint16
-	PlatformSpecificId uint16
-	LanguageId         uint16
-	NameId             uint16
+	PlatformID         uint16
+	PlatformSpecificID uint16
+	LanguageID         uint16
+	NameID             uint16
 	Length             uint16
 	Offset             uint16
 }
@@ -35,10 +39,12 @@ func parseTableName(buffer io.Reader) (*TableName, error) {
 	return &TableName{bytes}, nil
 }
 
+// Bytes returns the representation of this table to be stored in a font.
 func (table *TableName) Bytes() []byte {
 	return table.bytes
 }
 
+// List returns a list of all the strings defined in this table.
 func (table *TableName) List() []string {
 	reader := bytes.NewBuffer(table.bytes)
 
@@ -60,8 +66,8 @@ func (table *TableName) List() []string {
 		start := header.StringOffset + record.Offset
 		end := start + record.Length
 
-		results = append(results, strconv.Itoa(int(record.PlatformId))+","+strconv.Itoa(int(record.PlatformSpecificId))+","+
-			strconv.Itoa(int(record.LanguageId))+","+strconv.Itoa(int(record.NameId))+" "+strconv.Itoa(int(record.Offset))+" "+string(table.bytes[start:end]))
+		results = append(results, strconv.Itoa(int(record.PlatformID))+","+strconv.Itoa(int(record.PlatformSpecificID))+","+
+			strconv.Itoa(int(record.LanguageID))+","+strconv.Itoa(int(record.NameID))+" "+strconv.Itoa(int(record.Offset))+" "+string(table.bytes[start:end]))
 	}
 
 	return results
