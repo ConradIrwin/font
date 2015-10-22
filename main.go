@@ -36,8 +36,13 @@ func main() {
 			for _, line := range font.NameTable().List() {
 				fmt.Println(line)
 			}
-		} else {
-			fmt.Println("(no metadata)")
+		}
+
+		if font.HasTable(sfnt.TagHead) {
+			fmt.Printf("%#v\n", font.HeadTable())
+		}
+		if font.HasTable(sfnt.TagHhea) {
+			fmt.Printf("%#v\n", font.HheaTable())
 		}
 	}
 
