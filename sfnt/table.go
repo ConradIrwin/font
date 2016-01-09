@@ -1,7 +1,6 @@
 package sfnt
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 )
@@ -24,7 +23,6 @@ func newUnparsedTable(buffer io.Reader) (*unparsedTable, error) {
 }
 
 func parseTable(tag Tag, buffer io.Reader) (Table, error) {
-	fmt.Println("parsing table... ", tag)
 	if tag == TagHead {
 		return parseTableHead(buffer)
 	} else if tag == TagName {

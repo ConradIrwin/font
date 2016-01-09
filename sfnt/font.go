@@ -116,6 +116,10 @@ func (font *Font) HheaTable() *TableHhea {
 	return font.tables[TagHhea].(*TableHhea)
 }
 
+func (font *Font) Table(tag Tag) Table {
+	return font.tables[tag]
+}
+
 func (font *Font) checkSum() uint32 {
 
 	total := uint32(0)

@@ -3,7 +3,6 @@ package sfnt
 import (
 	"compress/zlib"
 	"encoding/binary"
-	"fmt"
 	"io"
 )
 
@@ -49,7 +48,6 @@ func parseWoff(file File) (*Font, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(entry)
 		entries[i] = entry
 	}
 
