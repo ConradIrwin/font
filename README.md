@@ -2,12 +2,31 @@ A program for parsing OpenType fonts in Golang.
 
 The main contribution of this repository is the [SFNT](https://godoc.org/github.com/ConradIrwin/font/sfnt) library which provides support for parsing OpenType, TrueType and wOFF fonts.
 
-Also included is a sample program called `font` that will tell you information about the font file that you have.
+Also included is a sample program called `font` that can do various useful things with fonts:
 
 ```
-go get github.com/ConradIrwin/font
-font <~/Downloads/Fanwood.ttf
+go install github.com/ConradIrwin/font
 ```
+
+Info gets information about the font from the `name` table:
+```
+font info ~/Downloads/Fanwood.ttf
+```
+
+Scrub empties the name table (which can give you a few kb savings, even if you gzip or woff2-encode your font).
+
+```
+font scrub ~/Downloads/Fanwood.ttf
+```
+
+Stats tells you how much space each table is using:
+
+```
+font stats ~/Downloads/Fanwood.ttf
+```
+
+TODO
+====
 
 Still missing is support for parsing EOT files (which should be easy to add) and for parsing wOFF2 files (which might be more time consuming, as that uses custom compression algorithm). Also support for generating wOFF files (which is annoyingly fiddly due to the checksum calculation), and a whole load of code around dealing with the hundreds of other SFNT table formats.
 
