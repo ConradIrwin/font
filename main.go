@@ -1,49 +1,35 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 
-	"github.com/ConradIrwin/font/sfnt"
+	"github.com/ConradIrwin/font/commands"
 )
 
 func main() {
 
-	data, _ := ioutil.ReadAll(os.Stdin)
+	command := "help"
 
-	font, err := sfnt.Parse(bytes.NewReader(data))
-
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	if len(os.Args) > 1 {
+		command = os.Args[1]
+		os.Args = os.Args[1:]
 	}
 
-	if font != nil {
-		if font.Type() == sfnt.TypeOpenType {
-			fmt.Println("OpenType Font")
+	switch command {
+	case "scrub":
+		commands.Scrub()
+	case "info":
+		commands.Info()
+	case "stats":
+		commands.Stats()
+	default:
+		fmt.Println(`
+Usage: font [scrub|info|stats] font.[otf,ttf,woff]
 
-		} else if font.Type() == sfnt.TypeTrueType || font.Type() == sfnt.TypeAppleTrueType {
-			fmt.Println("TrueType Font")
-		} else if font.Type() == sfnt.TypePostScript1 {
-			fmt.Println("PostScript Type 1 Font")
-		} else {
-			fmt.Println("Unknown Font Format")
-		}
-
-		if font.HasTable(sfnt.TagName) {
-			for _, line := range font.NameTable().List() {
-				fmt.Println(line)
-			}
-		}
-
-		if font.HasTable(sfnt.TagHead) {
-			fmt.Printf("%#v\n", font.HeadTable())
-		}
-		if font.HasTable(sfnt.TagHhea) {
-			fmt.Printf("%#v\n", font.HheaTable())
-		}
+info: prints the name table
+stats: prints each table and the amount of space used
+scrub: remove the name table (saves significant space)`)
 	}
 
 }
