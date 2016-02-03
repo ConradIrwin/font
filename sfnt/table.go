@@ -29,6 +29,8 @@ func parseTable(tag Tag, buffer io.Reader) (Table, error) {
 		return parseTableName(buffer)
 	} else if tag == TagHhea {
 		return parseTableHhea(buffer)
+	} else if tag == TagOS2 {
+		return parseTableOS2(buffer)
 	}
 	return newUnparsedTable(buffer)
 }

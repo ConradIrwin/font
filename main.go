@@ -23,11 +23,14 @@ func main() {
 		commands.Info()
 	case "stats":
 		commands.Stats()
+	case "metrics":
+		commands.Metrics()
 	default:
 		fmt.Println(`
 Usage: font [scrub|info|stats] font.[otf,ttf,woff]
 
-info: prints the name table
+info: prints the name table (contains metadata)
+metrics: prints the hhea table (contains font metrics)
 stats: prints each table and the amount of space used
 scrub: remove the name table (saves significant space)`)
 	}

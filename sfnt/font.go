@@ -116,6 +116,10 @@ func (font *Font) HheaTable() *TableHhea {
 	return font.tables[TagHhea].(*TableHhea)
 }
 
+func (font *Font) OS2Table() *TableOS2 {
+	return font.tables[TagOS2].(*TableOS2)
+}
+
 func (font *Font) Table(tag Tag) Table {
 	return font.tables[tag]
 }
