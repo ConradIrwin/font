@@ -24,7 +24,6 @@ func Info() {
 	}
 
 	font, err := sfnt.Parse(bytes.NewReader(data))
-
 	if err != nil {
 		panic(err)
 	}
