@@ -23,6 +23,9 @@ func Stats() {
 	}
 
 	font, err := sfnt.Parse(bytes.NewReader(data))
+	if err != nil {
+		panic(err)
+	}
 
 	for _, tag := range font.Tags() {
 		table := font.Table(tag)
