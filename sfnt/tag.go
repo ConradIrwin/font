@@ -15,6 +15,10 @@ var (
 	TagOS2 = NamedTag("OS/2")
 	// TagName represents the 'name' table, which contains font name information
 	TagName = NamedTag("name")
+	// TagGpos represents the 'GPOS' table, which contains Glyph Positioning features
+	TagGpos = NamedTag("GPOS")
+	// TagGsub represents the 'GSUB' table, which contains Glyph Substitution features
+	TagGsub = NamedTag("GSUB")
 
 	// TypeTrueType is the first four bytes of an OpenType file containing a TrueType font
 	TypeTrueType = Tag{0x00010000}
