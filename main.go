@@ -31,7 +31,7 @@ func main() {
 		fmt.Println(`
 Usage: font [features|info|metrics|scrub|stats] font.[otf,ttf,woff]
 
-features: prints the gpos/gsub tables (contins font features)
+features: prints the gpos/gsub tables (contains font features)
 info: prints the name table (contains metadata)
 metrics: prints the hhea table (contains font metrics)
 scrub: remove the name table (saves significant space)

@@ -7,7 +7,7 @@ import (
 	"github.com/ConradIrwin/font/sfnt"
 )
 
-// Features prints the gpos/gsub tables (contins font features).
+// Features prints the gpos/gsub tables (contains font features).
 func Features() {
 	if len(os.Args) < 2 {
 		panic(fmt.Errorf("Specify a font file"))
