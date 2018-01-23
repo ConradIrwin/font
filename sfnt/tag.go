@@ -30,6 +30,8 @@ var (
 	// TypeOpenType is the first four bytes of an OpenType file containing a PostScript Type 2 font
 	// as specified by OpenType
 	TypeOpenType = NamedTag("OTTO")
+	// TypeTrueTypeCollection is a font file that contains multiple fonts
+	TypeTrueTypeCollection = NamedTag("ttcf")
 
 	// SignatureWoff if the magic number at the start of a wOFF file.
 	SignatureWoff = NamedTag("wOFF")
