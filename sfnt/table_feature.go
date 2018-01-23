@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strconv"
 )
 
 // TableLayout represents the common layout table used by GPOS and GSUB.
@@ -66,8 +67,14 @@ func (f *Feature) String() string {
 		return name
 	}
 
-	if len(tag) == 4 && tag[0] == 'c' && tag[1] == 'v' && tag[2] >= '0' && tag[2] <= '9' && tag[3] >= '0' && tag[3] <= '9' {
-		return "Character Variants"
+	if len(tag) == 4 && (tag[0:2] == "cv" || tag[0:2] == "ss") {
+		if i, err := strconv.Atoi(tag[2:4]); err == nil {
+			if tag[0:2] == "cv" && i >= 1 && i <= 99 {
+				return fmt.Sprintf("Character Variant %d", i)
+			} else if tag[0:2] == "ss" && i >= 1 && i <= 20 {
+				return fmt.Sprintf("Stylistic Set %d", i)
+			}
+		}
 	}
 
 	return ""
