@@ -31,6 +31,11 @@ func parseTable(tag Tag, buffer io.Reader) (Table, error) {
 		return parseTableHhea(buffer)
 	} else if tag == TagOS2 {
 		return parseTableOS2(buffer)
+	} else if tag == TagGpos {
+		return parseTableLayout(buffer)
+	} else if tag == TagGsub {
+		return parseTableLayout(buffer)
 	}
+
 	return newUnparsedTable(buffer)
 }

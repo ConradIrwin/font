@@ -120,6 +120,18 @@ func (font *Font) OS2Table() *TableOS2 {
 	return font.tables[TagOS2].(*TableOS2)
 }
 
+// GposTable returns the Glyph Positioning table identified with the 'GPOS' tag.
+// This method will panic if the font doesn't have this table.
+func (font *Font) GposTable() *TableLayout {
+	return font.tables[TagGpos].(*TableLayout)
+}
+
+// GsubTable returns the Glyph Substitution table identified with the 'GSUB' tag.
+// This method will panic if the font doesn't have this table.
+func (font *Font) GsubTable() *TableLayout {
+	return font.tables[TagGsub].(*TableLayout)
+}
+
 func (font *Font) Table(tag Tag) Table {
 	return font.tables[tag]
 }

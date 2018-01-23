@@ -25,14 +25,17 @@ func main() {
 		commands.Stats()
 	case "metrics":
 		commands.Metrics()
+	case "features":
+		commands.Features()
 	default:
 		fmt.Println(`
-Usage: font [scrub|info|stats] font.[otf,ttf,woff]
+Usage: font [features|info|metrics|scrub|stats] font.[otf,ttf,woff]
 
+features: prints the gpos/gsub tables (contains font features)
 info: prints the name table (contains metadata)
 metrics: prints the hhea table (contains font metrics)
-stats: prints each table and the amount of space used
-scrub: remove the name table (saves significant space)`)
+scrub: remove the name table (saves significant space)
+stats: prints each table and the amount of space used`)
 	}
 
 }
