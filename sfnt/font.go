@@ -3,6 +3,7 @@ package sfnt
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"sort"
 )
 
@@ -185,6 +186,7 @@ func Parse(file File) (*Font, error) {
 	} else if magic == TypeTrueType || magic == TypeOpenType || magic == TypePostScript1 || magic == TypeAppleTrueType {
 		return parseOTF(file)
 	} else {
+		fmt.Printf("%#v\n", magic)
 		return nil, ErrUnsupportedFormat
 	}
 }
