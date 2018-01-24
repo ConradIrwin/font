@@ -28,8 +28,8 @@ func Stats() {
 	}
 
 	for _, tag := range font.Tags() {
-		table := font.Table(tag)
-		fmt.Println(tag, len(table.Bytes()))
+		if table, ok := font.Table(tag); ok {
+			fmt.Println(tag, len(table.Bytes()))
+		}
 	}
-
 }
