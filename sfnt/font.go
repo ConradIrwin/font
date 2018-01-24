@@ -99,46 +99,46 @@ func (font *Font) String() string {
 }
 
 // HeadTable returns the table corresponding to the 'head' tag.
-// This method will panic if the font does not have this table,
-// or if it is not an instance of TableHead.
-func (font *Font) HeadTable() *TableHead {
-	return font.tables[TagHead].(*TableHead)
+func (font *Font) HeadTable() (*TableHead, bool) {
+	t, found := font.tables[TagHead].(*TableHead)
+	return t, found
 }
 
 // NameTable returns the table corresponding to the 'name' tag.
-// This method will panic if the font does not have this table,
-// or if it is not an instance of TableName.
-func (font *Font) NameTable() *TableName {
-	return font.tables[TagName].(*TableName)
+func (font *Font) NameTable() (*TableName, bool) {
+	t, found := font.tables[TagName].(*TableName)
+	return t, found
 }
 
-func (font *Font) HheaTable() *TableHhea {
-	return font.tables[TagHhea].(*TableHhea)
+func (font *Font) HheaTable() (*TableHhea, bool) {
+	t, found := font.tables[TagHhea].(*TableHhea)
+	return t, found
 }
 
-func (font *Font) OS2Table() *TableOS2 {
-	return font.tables[TagOS2].(*TableOS2)
+func (font *Font) OS2Table() (*TableOS2, bool) {
+	t, found := font.tables[TagOS2].(*TableOS2)
+	return t, found
 }
 
 // GposTable returns the Glyph Positioning table identified with the 'GPOS' tag.
-// This method will panic if the font doesn't have this table.
-func (font *Font) GposTable() *TableLayout {
-	return font.tables[TagGpos].(*TableLayout)
+func (font *Font) GposTable() (*TableLayout, bool) {
+	t, found := font.tables[TagGpos].(*TableLayout)
+	return t, found
 }
 
 // GsubTable returns the Glyph Substitution table identified with the 'GSUB' tag.
-// This method will panic if the font doesn't have this table.
-func (font *Font) GsubTable() *TableLayout {
-	return font.tables[TagGsub].(*TableLayout)
+func (font *Font) GsubTable() (*TableLayout, bool) {
+	t, found := font.tables[TagGsub].(*TableLayout)
+	return t, found
 }
 
-func (font *Font) Table(tag Tag) Table {
-	return font.tables[tag]
+func (font *Font) Table(tag Tag) (Table, bool) {
+	t, found := font.tables[tag]
+	return t, found
 }
 
 func (font *Font) checkSum() uint32 {
-
-	total := uint32(0)
+	var total uint32
 
 	for _, table := range font.tables {
 		total += checkSum(table.Bytes())

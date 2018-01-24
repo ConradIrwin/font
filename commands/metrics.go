@@ -27,8 +27,7 @@ func Metrics() {
 		panic(err)
 	}
 
-	if font.HasTable(sfnt.TagHhea) {
-		hhea := font.HheaTable()
+	if hhea, ok := font.HheaTable(); ok {
 		fmt.Println("Ascent:", hhea.Ascent)
 		fmt.Println("Descent:", hhea.Descent)
 		fmt.Println("Line gap:", hhea.LineGap)
@@ -38,12 +37,12 @@ func Metrics() {
 		fmt.Println("Advance with max:", hhea.AdvanceWidthMax)
 		fmt.Println("Min left side bearing:", hhea.MinLeftSideBearing)
 		fmt.Println("Min right side bearing:", hhea.MinRightSideBearing)
+	} else {
+		fmt.Fprintf(os.Stderr, "No %q table\n", sfnt.TagHhea.String())
 	}
 
-	if font.HasTable(sfnt.TagOS2) {
-		fmt.Printf("%#v\n", font.OS2Table())
-
-		os2 := font.OS2Table()
+	if os2, ok := font.OS2Table(); ok {
+		fmt.Printf("%#v\n", os2)
 
 		fmt.Println("Cap Height:", os2.SCapHeight)
 		fmt.Println("Typographic Ascender:", os2.STypoAscender)
@@ -52,6 +51,7 @@ func Metrics() {
 		fmt.Println("Win Descent:", os2.UsWinDescent)
 
 		fmt.Println("TODO: SHOW MORE METRICS")
-
+	} else {
+		fmt.Fprintf(os.Stderr, "No %q table\n", sfnt.TagOS2.String())
 	}
 }

@@ -2,6 +2,7 @@ package sfnt
 
 import (
 	"encoding/binary"
+	"fmt"
 	"io"
 	"sort"
 )
@@ -43,7 +44,10 @@ func (font *Font) WriteOTF(w io.Writer) (n int, err error) {
 	todo := outputEntries(font.Tags())
 	sort.Sort(todo)
 
-	headTable := font.HeadTable()
+	headTable, ok := font.HeadTable()
+	if !ok {
+		return 0, fmt.Errorf("missing `head` table")
+	}
 
 	headTable.ClearExpectedChecksum()
 
