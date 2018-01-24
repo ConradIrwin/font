@@ -2,33 +2,22 @@ package commands
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/ConradIrwin/font/sfnt"
 )
 
 // Features prints the gpos/gsub tables (contains font features).
-func Features() {
-	if len(os.Args) < 2 {
-		panic(fmt.Errorf("Specify a font file"))
+func Features(font *sfnt.Font) error {
+	if err := layoutTable(font, sfnt.TagGsub, "Glyph Substitution Table (GSUB)"); err != nil {
+		return err
 	}
-
-	file, err := os.Open(os.Args[1])
-	if err != nil {
-		panic(fmt.Errorf("Failed to open font: %s", err))
+	if err := layoutTable(font, sfnt.TagGpos, "Glyph Positioning Table (GPOS)"); err != nil {
+		return err
 	}
-	defer file.Close()
-
-	font, err := sfnt.Parse(file)
-	if err != nil {
-		panic(fmt.Errorf("Failed to parse font: %s", err))
-	}
-
-	layoutTable(font, sfnt.TagGsub, "Glyph Substitution Table (GSUB)")
-	layoutTable(font, sfnt.TagGpos, "Glyph Positioning Table (GPOS)")
+	return nil
 }
 
-func layoutTable(font *sfnt.Font, tag sfnt.Tag, name string) {
+func layoutTable(font *sfnt.Font, tag sfnt.Tag, name string) error {
 	if font.HasTable(tag) {
 		fmt.Printf("%s:\n", name)
 
@@ -51,6 +40,8 @@ func layoutTable(font *sfnt.Font, tag sfnt.Tag, name string) {
 	} else {
 		fmt.Printf("No %s\n", name)
 	}
+
+	return nil
 }
 
 func bracketString(o fmt.Stringer) string {

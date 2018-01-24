@@ -1,32 +1,13 @@
 package commands
 
 import (
-	"bytes"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"strconv"
 
 	"github.com/ConradIrwin/font/sfnt"
 )
 
-func Info() {
-	file, err := os.Open(os.Args[1])
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	data, err := ioutil.ReadFile(file.Name())
-	if err != nil {
-		panic(err)
-	}
-
-	font, err := sfnt.Parse(bytes.NewReader(data))
-	if err != nil {
-		panic(err)
-	}
-
+func Info(font *sfnt.Font) error {
 	if font.HasTable(sfnt.TagName) {
 		name := font.NameTable()
 
@@ -35,4 +16,5 @@ func Info() {
 			fmt.Println(entry.Platform() + ids + entry.Label() + ": " + entry.String())
 		}
 	}
+	return nil
 }
