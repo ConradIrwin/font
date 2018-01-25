@@ -1,38 +1,41 @@
 package sfnt
 
-import "encoding/hex"
+import (
+	"encoding/hex"
+	"fmt"
+)
 
 var (
 	// TagHead represents the 'head' table, which contains the font header
-	TagHead = NamedTag("head")
+	TagHead = MustNamedTag("head")
 	// TagMaxp represents the 'maxp' table, which contains the maximum profile
-	TagMaxp = NamedTag("maxp")
+	TagMaxp = MustNamedTag("maxp")
 	// TagHmtx represents the 'hmtx' table, which contains the horizontal metrics
-	TagHmtx = NamedTag("hmtx")
+	TagHmtx = MustNamedTag("hmtx")
 	// TagHhea represents the 'hhea' table, which contains the horizonal header
-	TagHhea = NamedTag("hhea")
+	TagHhea = MustNamedTag("hhea")
 	// TagOS2 represents the 'OS/2' table, which contains windows-specific metadata
-	TagOS2 = NamedTag("OS/2")
+	TagOS2 = MustNamedTag("OS/2")
 	// TagName represents the 'name' table, which contains font name information
-	TagName = NamedTag("name")
+	TagName = MustNamedTag("name")
 	// TagGpos represents the 'GPOS' table, which contains Glyph Positioning features
-	TagGpos = NamedTag("GPOS")
+	TagGpos = MustNamedTag("GPOS")
 	// TagGsub represents the 'GSUB' table, which contains Glyph Substitution features
-	TagGsub = NamedTag("GSUB")
+	TagGsub = MustNamedTag("GSUB")
 
 	// TypeTrueType is the first four bytes of an OpenType file containing a TrueType font
 	TypeTrueType = Tag{0x00010000}
 	// TypeAppleTrueType is the first four bytes of an OpenType file containing a TrueType font
 	// (specifically one designed for Apple products, it's recommended to use TypeTrueType instead)
-	TypeAppleTrueType = NamedTag("true")
+	TypeAppleTrueType = MustNamedTag("true")
 	// TypePostScript1 is the first four bytes of an OpenType file containing a PostScript Type 1 font
-	TypePostScript1 = NamedTag("typ1")
+	TypePostScript1 = MustNamedTag("typ1")
 	// TypeOpenType is the first four bytes of an OpenType file containing a PostScript Type 2 font
 	// as specified by OpenType
-	TypeOpenType = NamedTag("OTTO")
+	TypeOpenType = MustNamedTag("OTTO")
 
 	// SignatureWoff if the magic number at the start of a wOFF file.
-	SignatureWoff = NamedTag("wOFF")
+	SignatureWoff = MustNamedTag("wOFF")
 )
 
 // Tag represents an open-type table name.
@@ -44,19 +47,27 @@ type Tag struct {
 }
 
 // NamedTag gives you the Tag corresponding to the acronym.
-// This function will panic if the string passed in is not 4 bytes long.
-func NamedTag(str string) Tag {
+func NamedTag(str string) (Tag, error) {
 	bytes := []byte(str)
 
 	if len(bytes) != 4 {
-		panic("invalid tag")
+		return Tag{}, fmt.Errorf("invalid tag: must be exactly 4 bytes")
 	}
 
 	return Tag{uint32(bytes[0])<<24 |
 		uint32(bytes[1])<<16 |
 		uint32(bytes[2])<<8 |
-		uint32(bytes[3])}
+		uint32(bytes[3])}, nil
+}
 
+// MustNamedTag gives you the Tag corresponding to the acronym.
+// This function will panic if the string passed in is not 4 bytes long.
+func MustNamedTag(str string) Tag {
+	t, err := NamedTag(str)
+	if err != nil {
+		panic(err)
+	}
+	return t
 }
 
 // String returns the ASCII representation of the tag.

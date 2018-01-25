@@ -3,8 +3,7 @@ package sfnt
 import "testing"
 
 func TestParsedTag(t *testing.T) {
-
-	tag := NamedTag("head")
+	tag := MustNamedTag("head")
 	if tag.Number != 0x68656164 {
 		t.Errorf("head != %v", tag.Number)
 	}
@@ -15,7 +14,6 @@ func TestParsedTag(t *testing.T) {
 }
 
 func TestNewTag(t *testing.T) {
-
 	tag := Tag{0x74727565}
 
 	if tag.Number != 0x74727565 {
@@ -28,7 +26,6 @@ func TestNewTag(t *testing.T) {
 }
 
 func TestTagEquality(t *testing.T) {
-
 	t1 := Tag{0x74727565}
 	t2 := Tag{0x74727565}
 
@@ -36,12 +33,11 @@ func TestTagEquality(t *testing.T) {
 		t.Errorf("equality failed for number")
 	}
 
-	if NamedTag("head") != NamedTag("head") {
+	if MustNamedTag("head") != MustNamedTag("head") {
 		t.Errorf("equality failed for parsed")
 	}
 
-	if NamedTag("true") != t1 {
-		t.Errorf("equality failed %v %v", NamedTag("true"), t1)
+	if MustNamedTag("true") != t1 {
+		t.Errorf("equality failed %v %v", MustNamedTag("true"), t1)
 	}
-
 }
