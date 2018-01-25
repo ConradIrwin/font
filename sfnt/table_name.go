@@ -17,9 +17,8 @@ import (
 // and Copyright.
 // https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6name.html
 type TableName struct {
-	bytes         []byte
-	bytesAreStale bool
-	entries       []*NameEntry
+	bytes   []byte
+	entries []*NameEntry
 }
 
 type nameHeader struct {
@@ -180,7 +179,6 @@ type NameEntry struct {
 // Value. Only MicrosoftUnicode (3,1 ,X), MacRomain (1,0,X) and Unicode platform
 // strings are supported.
 func (nameEntry *NameEntry) String() string {
-
 	if nameEntry.PlatformID == PlatformUnicode || (nameEntry.PlatformID == PlatformMicrosoft &&
 		nameEntry.EncodingID == PlatformEncodingMicrosoftUnicode) {
 
@@ -221,12 +219,50 @@ func parseTableName(buffer io.Reader) (*TableName, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &TableName{bytes: bytes}, nil
+
+	entries, err := parseTableStrings(bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return &TableName{bytes: bytes, entries: entries}, nil
+}
+
+// parseTableStrings returns a list of all the strings defined in this table.
+func parseTableStrings(b []byte) ([]*NameEntry, error) {
+	reader := bytes.NewBuffer(b)
+
+	header := nameHeader{}
+	if err := binary.Read(reader, binary.BigEndian, &header); err != nil {
+		return nil, err
+	}
+
+	results := make([]*NameEntry, 0, header.Count)
+
+	for i := uint16(0); i < header.Count; i++ {
+		var record nameRecord
+		if err := binary.Read(reader, binary.BigEndian, &record); err != nil {
+			return nil, err
+		}
+
+		start := header.StringOffset + record.Offset
+		end := start + record.Length
+
+		results = append(results, &NameEntry{
+			PlatformID: record.PlatformID,
+			EncodingID: record.EncodingID,
+			LanguageID: record.LanguageID,
+			NameID:     record.NameID,
+			Value:      b[start:end],
+		})
+	}
+
+	return results, nil
 }
 
 // NewTableName returns an empty NAME table.
 func NewTableName() *TableName {
-	return &TableName{bytes: []byte{}, bytesAreStale: true, entries: []*NameEntry{}}
+	return &TableName{}
 }
 
 // AddMicrosoftEnglishEntry adds an entry to the name table for the 'Microsoft' platform,
@@ -293,29 +329,29 @@ func (table *TableName) AddUnicodeEntry(nameId NameID, value string) error {
 }
 
 // Add an entry to the table. This is a relatively low-level method, most of what you need can be
-// accomplished using AddUnicodeEntry,AddMacEnglishEntry, and AddMicrosoftEnglishEntry.
+// accomplished using AddUnicodeEntry, AddMacEnglishEntry, and AddMicrosoftEnglishEntry.
 func (table *TableName) Add(entry *NameEntry) {
-	table.bytesAreStale = true
+	table.bytes = nil
 	table.List()
 	table.entries = append(table.entries, entry)
 }
 
 // Bytes returns the representation of this table to be stored in a font.
 func (table *TableName) Bytes() []byte {
-	if !table.bytesAreStale {
+	if len(table.bytes) == 0 {
 		return table.bytes
 	}
 
-	buf := &bytes.Buffer{}
+	var buf bytes.Buffer
 
 	header := nameHeader{0, uint16(len(table.entries)), uint16(binary.Size(nameHeader{}) + len(table.entries)*binary.Size(nameRecord{}))}
 
-	binary.Write(buf, binary.BigEndian, header)
+	binary.Write(&buf, binary.BigEndian, header)
 
 	offset := 0
 	for _, entry := range table.entries {
 		length := len(entry.Value)
-		binary.Write(buf, binary.BigEndian, &nameRecord{
+		binary.Write(&buf, binary.BigEndian, &nameRecord{
 			PlatformID: entry.PlatformID,
 			EncodingID: entry.EncodingID,
 			LanguageID: entry.LanguageID,
@@ -331,38 +367,10 @@ func (table *TableName) Bytes() []byte {
 	}
 
 	table.bytes = buf.Bytes()
-	table.bytesAreStale = false
 	return table.bytes
 }
 
 // List returns a list of all the strings defined in this table.
 func (table *TableName) List() []*NameEntry {
-	if table.entries != nil {
-		return table.entries
-	}
-	reader := bytes.NewBuffer(table.bytes)
-
-	header := nameHeader{}
-	err := binary.Read(reader, binary.BigEndian, &header)
-	if err != nil {
-		panic(err)
-	}
-
-	results := make([]*NameEntry, 0, header.Count)
-
-	for i := uint16(0); i < header.Count; i++ {
-		record := nameRecord{}
-		err := binary.Read(reader, binary.BigEndian, &record)
-		if err != nil {
-			panic(err)
-		}
-
-		start := header.StringOffset + record.Offset
-		end := start + record.Length
-
-		results = append(results, &NameEntry{record.PlatformID, record.EncodingID, record.LanguageID, record.NameID, table.bytes[start:end]})
-	}
-	table.entries = results
-
-	return results
+	return table.entries
 }
