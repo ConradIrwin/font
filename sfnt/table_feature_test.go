@@ -22,7 +22,7 @@ func TestFeatureString(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		f := Feature{Tag: NamedTag(test.tag)}
+		f := Feature{Tag: MustNamedTag(test.tag)}
 		if got := f.String(); got != test.want {
 			t.Errorf("Feature{%q}.String() = %q want %q", test.tag, got, test.want)
 		}
