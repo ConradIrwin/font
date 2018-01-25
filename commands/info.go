@@ -27,12 +27,12 @@ func Info() {
 		panic(err)
 	}
 
-	if font.HasTable(sfnt.TagName) {
-		name := font.NameTable()
-
+	if name, ok := font.NameTable(); ok {
 		for _, entry := range name.List() {
 			ids := " (" + strconv.Itoa(int(entry.PlatformID)) + "," + strconv.Itoa(int(entry.EncodingID)) + "," + strconv.Itoa(int(entry.LanguageID)) + "," + strconv.Itoa(int(entry.NameID)) + ") "
 			fmt.Println(entry.Platform() + ids + entry.Label() + ": " + entry.String())
 		}
+	} else {
+		fmt.Fprintf(os.Stderr, "Missing %q table\n", sfnt.TagName.String())
 	}
 }

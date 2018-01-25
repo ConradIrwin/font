@@ -29,10 +29,10 @@ func Features() {
 }
 
 func layoutTable(font *sfnt.Font, tag sfnt.Tag, name string) {
-	if font.HasTable(tag) {
+	t, found := font.Table(tag)
+	if t, ok := t.(*sfnt.TableLayout); found && ok {
 		fmt.Printf("%s:\n", name)
 
-		t := font.Table(tag).(*sfnt.TableLayout)
 		for _, script := range t.Scripts {
 			fmt.Printf("\tScript %q%s:\n", script.Tag, bracketString(script))
 
