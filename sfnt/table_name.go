@@ -18,9 +18,8 @@ import (
 // and Copyright.
 // https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6name.html
 type TableName struct {
-	bytes         []byte
-	bytesAreStale bool
-	entries       []*NameEntry
+	bytes   []byte
+	entries []*NameEntry
 }
 
 type nameHeader struct {
@@ -231,9 +230,8 @@ func parseTableName(r io.Reader) (Table, error) {
 	}
 
 	table := &TableName{
-		bytes:         buf,
-		bytesAreStale: false,
-		entries:       make([]*NameEntry, 0, header.Count),
+		bytes:   buf,
+		entries: make([]*NameEntry, 0, header.Count),
 	}
 
 	for i := 0; i < int(header.Count); i++ {
@@ -264,11 +262,7 @@ func parseTableName(r io.Reader) (Table, error) {
 
 // NewTableName returns an empty NAME table.
 func NewTableName() *TableName {
-	return &TableName{
-		bytes:         []byte{},
-		bytesAreStale: true,
-		entries:       []*NameEntry{},
-	}
+	return &TableName{}
 }
 
 // AddMicrosoftEnglishEntry adds an entry to the name table for the 'Microsoft' platform,
@@ -337,13 +331,13 @@ func (table *TableName) AddUnicodeEntry(nameId NameID, value string) error {
 // Add an entry to the table. This is a relatively low-level method, most of what you need can be
 // accomplished using AddUnicodeEntry,AddMacEnglishEntry, and AddMicrosoftEnglishEntry.
 func (table *TableName) Add(entry *NameEntry) {
-	table.bytesAreStale = true
+	table.bytes = nil
 	table.entries = append(table.entries, entry)
 }
 
 // Bytes returns the representation of this table to be stored in a font.
 func (table *TableName) Bytes() []byte {
-	if !table.bytesAreStale {
+	if len(table.bytes) > 0 {
 		return table.bytes
 	}
 
@@ -373,7 +367,6 @@ func (table *TableName) Bytes() []byte {
 	}
 
 	table.bytes = buf.Bytes()
-	table.bytesAreStale = false
 	return table.bytes
 }
 
