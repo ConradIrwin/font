@@ -9,6 +9,7 @@ package sfnt
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 	"math"
 )
 
@@ -24,7 +25,6 @@ const otfHeaderLength = 12
 const directoryEntryLength = 16
 
 func newOtfHeader(scalerType Tag, numTables uint16) *otfHeader {
-
 	// http://www.opensource.apple.com/source/ICU/ICU-491.11.3/icuSources/layout/KernTable.cpp?txt
 	entrySelector := uint16(math.Logb(float64(numTables)))
 	searchRange := ((1 << entrySelector) * uint16(16))
@@ -58,25 +58,60 @@ func (entry *directoryEntry) checkSum() uint32 {
 	return entry.Tag.Number + entry.CheckSum + entry.Offset + entry.Length
 }
 
+func readOtfHeader(r io.Reader, header *otfHeader) error {
+	return binary.Read(r, binary.BigEndian, header)
+}
+
+func readOtfHeaderFast(r io.Reader, header *otfHeader) error {
+	var buf [12]byte
+	if _, err := io.ReadFull(r, buf[:]); err != nil {
+		return err
+	}
+
+	header.ScalerType = Tag{binary.BigEndian.Uint32(buf[0:4])}
+	header.NumTables = binary.BigEndian.Uint16(buf[4:6])
+	header.SearchRange = binary.BigEndian.Uint16(buf[6:8])
+	header.EntrySelector = binary.BigEndian.Uint16(buf[8:10])
+	header.RangeShift = binary.BigEndian.Uint16(buf[10:12])
+
+	return nil
+}
+
+func readDirectoryEntry(r io.Reader, entry *directoryEntry) error {
+	return binary.Read(r, binary.BigEndian, entry)
+}
+
+func readDirectoryEntryFast(r io.Reader, entry *directoryEntry) error {
+	var buf [16]byte
+	if _, err := io.ReadFull(r, buf[:]); err != nil {
+		return err
+	}
+
+	entry.Tag = Tag{binary.BigEndian.Uint32(buf[0:4])}
+	entry.CheckSum = binary.BigEndian.Uint32(buf[4:8])
+	entry.Offset = binary.BigEndian.Uint32(buf[8:12])
+	entry.Length = binary.BigEndian.Uint32(buf[12:16])
+
+	return nil
+}
+
 // ParseOTF reads an OpenTyp (.otf) or TrueType (.ttf) file and returns a Font.
 // If parsing fails, then an error is returned and Font will be nil.
 func parseOTF(file File) (*Font, error) {
-	header := otfHeader{}
-	err := binary.Read(file, binary.BigEndian, &header)
-	if err != nil {
+	var header otfHeader
+	if err := readOtfHeaderFast(file, &header); err != nil {
 		return nil, err
 	}
 
 	font := &Font{
 		file:       file,
 		scalerType: header.ScalerType,
-		tables:     make(map[Tag]tableSection, header.NumTables),
+		tables:     make(map[Tag]*tableSection, header.NumTables),
 	}
 
-	for i := uint16(0); i < header.NumTables; i++ {
+	for i := 0; i < int(header.NumTables); i++ {
 		var entry directoryEntry
-		err := binary.Read(file, binary.BigEndian, &entry)
-		if err != nil {
+		if err := readDirectoryEntryFast(file, &entry); err != nil {
 			return nil, err
 		}
 

@@ -3,6 +3,7 @@ package sfnt
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 )
 
 type woffHeader struct {
@@ -28,9 +29,53 @@ type woffEntry struct {
 	OrigChecksum uint32
 }
 
+func readWoffHeader(r io.Reader, header *woffHeader) error {
+	return binary.Read(r, binary.BigEndian, header)
+}
+
+func readWoffHeaderFast(r io.Reader, header *woffHeader) error {
+	var buf [44]byte
+	if _, err := io.ReadFull(r, buf[:]); err != nil {
+		return err
+	}
+
+	header.Signature = Tag{binary.BigEndian.Uint32(buf[0:4])}
+	header.Flavor = Tag{binary.BigEndian.Uint32(buf[4:8])}
+	header.Length = binary.BigEndian.Uint32(buf[8:12])
+	header.NumTables = binary.BigEndian.Uint16(buf[12:14])
+	header.Reserved = binary.BigEndian.Uint16(buf[14:16])
+	header.TotalSfntSize = binary.BigEndian.Uint32(buf[16:20])
+	header.Version.Major = int16(binary.BigEndian.Uint16(buf[20:22]))
+	header.Version.Minor = binary.BigEndian.Uint16(buf[22:24])
+	header.MetaOffset = binary.BigEndian.Uint32(buf[24:28])
+	header.MetaLength = binary.BigEndian.Uint32(buf[28:32])
+	header.MetaOrigLength = binary.BigEndian.Uint32(buf[32:36])
+	header.PrivOffset = binary.BigEndian.Uint32(buf[36:40])
+	header.PrivLength = binary.BigEndian.Uint32(buf[40:44])
+
+	return nil
+}
+
+func readWoffEntry(r io.Reader, entry *woffEntry) error {
+	return binary.Read(r, binary.BigEndian, entry)
+}
+
+func readWoffEntryFast(r io.Reader, entry *woffEntry) error {
+	var buf [20]byte
+	if _, err := io.ReadFull(r, buf[:]); err != nil {
+		return err
+	}
+	entry.Tag = Tag{binary.BigEndian.Uint32(buf[0:4])}
+	entry.Offset = binary.BigEndian.Uint32(buf[4:8])
+	entry.CompLength = binary.BigEndian.Uint32(buf[8:12])
+	entry.OrigLength = binary.BigEndian.Uint32(buf[12:16])
+	entry.OrigChecksum = binary.BigEndian.Uint32(buf[16:20])
+	return nil
+}
+
 func parseWoff(file File) (*Font, error) {
 	var header woffHeader
-	if err := binary.Read(file, binary.BigEndian, &header); err != nil {
+	if err := readWoffHeaderFast(file, &header); err != nil {
 		return nil, err
 	}
 
@@ -42,7 +87,7 @@ func parseWoff(file File) (*Font, error) {
 
 	for i := uint16(0); i < header.NumTables; i++ {
 		var entry woffEntry
-		if err := binary.Read(file, binary.BigEndian, &entry); err != nil {
+		if err := readWoffEntryFast(file, &entry); err != nil {
 			return nil, err
 		}
 
