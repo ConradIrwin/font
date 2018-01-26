@@ -21,7 +21,11 @@ func layoutTable(font *sfnt.Font, tag sfnt.Tag, name string) error {
 	if font.HasTable(tag) {
 		fmt.Printf("%s:\n", name)
 
-		t := font.Table(tag).(*sfnt.TableLayout)
+		t, err := font.TableLayout(tag)
+		if err != nil {
+			return err
+		}
+
 		for _, script := range t.Scripts {
 			fmt.Printf("\tScript %q%s:\n", script.Tag, bracketString(script))
 

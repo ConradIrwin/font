@@ -28,10 +28,9 @@ type TableHead struct {
 	GlyphDataFormat    int16
 }
 
-func parseTableHead(buffer io.Reader) (*TableHead, error) {
-	table := TableHead{}
-	err := binary.Read(buffer, binary.BigEndian, &table)
-	if err != nil {
+func parseTableHead(r io.Reader) (Table, error) {
+	var table TableHead
+	if err := binary.Read(r, binary.BigEndian, &table); err != nil {
 		return nil, err
 	}
 	return &table, nil
@@ -39,11 +38,9 @@ func parseTableHead(buffer io.Reader) (*TableHead, error) {
 
 // Bytes returns the byte representation of this header.
 func (table *TableHead) Bytes() []byte {
-	buffer := &bytes.Buffer{}
-	err := binary.Write(buffer, binary.BigEndian, table)
-	// should never happen
-	if err != nil {
-		panic(err)
+	var buffer bytes.Buffer
+	if err := binary.Write(&buffer, binary.BigEndian, table); err != nil {
+		panic(err) // should never happen
 	}
 	return buffer.Bytes()
 }

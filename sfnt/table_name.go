@@ -3,6 +3,7 @@ package sfnt
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"strconv"
@@ -216,17 +217,58 @@ func (nameEntry *NameEntry) Platform() string {
 	return nameEntry.PlatformID.String()
 }
 
-func parseTableName(buffer io.Reader) (*TableName, error) {
-	bytes, err := ioutil.ReadAll(buffer)
+func parseTableName(r io.Reader) (Table, error) {
+	buf, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
-	return &TableName{bytes: bytes}, nil
+
+	r = bytes.NewBuffer(buf)
+
+	var header nameHeader
+	if err := binary.Read(r, binary.BigEndian, &header); err != nil {
+		return nil, err
+	}
+
+	table := &TableName{
+		bytes:         buf,
+		bytesAreStale: false,
+		entries:       make([]*NameEntry, 0, header.Count),
+	}
+
+	for i := 0; i < int(header.Count); i++ {
+		var record nameRecord
+		if err := binary.Read(r, binary.BigEndian, &record); err != nil {
+			return nil, err
+		}
+
+		start := header.StringOffset + record.Offset
+		end := start + record.Length
+
+		if int(start) > len(table.bytes) || int(end) > len(table.bytes) {
+			fmt.Printf("[%d] buf: %d, %d %d\n", i, len(buf), start, end)
+			return nil, io.ErrUnexpectedEOF
+		}
+
+		table.entries = append(table.entries, &NameEntry{
+			record.PlatformID,
+			record.EncodingID,
+			record.LanguageID,
+			record.NameID,
+			table.bytes[start:end],
+		})
+	}
+
+	return table, nil
 }
 
 // NewTableName returns an empty NAME table.
 func NewTableName() *TableName {
-	return &TableName{bytes: []byte{}, bytesAreStale: true, entries: []*NameEntry{}}
+	return &TableName{
+		bytes:         []byte{},
+		bytesAreStale: true,
+		entries:       []*NameEntry{},
+	}
 }
 
 // AddMicrosoftEnglishEntry adds an entry to the name table for the 'Microsoft' platform,
@@ -296,7 +338,6 @@ func (table *TableName) AddUnicodeEntry(nameId NameID, value string) error {
 // accomplished using AddUnicodeEntry,AddMacEnglishEntry, and AddMicrosoftEnglishEntry.
 func (table *TableName) Add(entry *NameEntry) {
 	table.bytesAreStale = true
-	table.List()
 	table.entries = append(table.entries, entry)
 }
 
@@ -306,16 +347,17 @@ func (table *TableName) Bytes() []byte {
 		return table.bytes
 	}
 
-	buf := &bytes.Buffer{}
-
-	header := nameHeader{0, uint16(len(table.entries)), uint16(binary.Size(nameHeader{}) + len(table.entries)*binary.Size(nameRecord{}))}
-
-	binary.Write(buf, binary.BigEndian, header)
+	var buf bytes.Buffer
+	binary.Write(&buf, binary.BigEndian, &nameHeader{
+		0,
+		uint16(len(table.entries)),
+		uint16(binary.Size(nameHeader{}) + len(table.entries)*binary.Size(nameRecord{})),
+	})
 
 	offset := 0
 	for _, entry := range table.entries {
 		length := len(entry.Value)
-		binary.Write(buf, binary.BigEndian, &nameRecord{
+		binary.Write(&buf, binary.BigEndian, &nameRecord{
 			PlatformID: entry.PlatformID,
 			EncodingID: entry.EncodingID,
 			LanguageID: entry.LanguageID,
@@ -337,32 +379,5 @@ func (table *TableName) Bytes() []byte {
 
 // List returns a list of all the strings defined in this table.
 func (table *TableName) List() []*NameEntry {
-	if table.entries != nil {
-		return table.entries
-	}
-	reader := bytes.NewBuffer(table.bytes)
-
-	header := nameHeader{}
-	err := binary.Read(reader, binary.BigEndian, &header)
-	if err != nil {
-		panic(err)
-	}
-
-	results := make([]*NameEntry, 0, header.Count)
-
-	for i := uint16(0); i < header.Count; i++ {
-		record := nameRecord{}
-		err := binary.Read(reader, binary.BigEndian, &record)
-		if err != nil {
-			panic(err)
-		}
-
-		start := header.StringOffset + record.Offset
-		end := start + record.Length
-
-		results = append(results, &NameEntry{record.PlatformID, record.EncodingID, record.LanguageID, record.NameID, table.bytes[start:end]})
-	}
-	table.entries = results
-
-	return results
+	return table.entries
 }

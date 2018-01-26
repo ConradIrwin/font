@@ -8,7 +8,7 @@ package sfnt
 
 import (
 	"encoding/binary"
-	"io"
+	"fmt"
 	"math"
 )
 
@@ -61,41 +61,40 @@ func (entry *directoryEntry) checkSum() uint32 {
 // ParseOTF reads an OpenTyp (.otf) or TrueType (.ttf) file and returns a Font.
 // If parsing fails, then an error is returned and Font will be nil.
 func parseOTF(file File) (*Font, error) {
-
 	header := otfHeader{}
 	err := binary.Read(file, binary.BigEndian, &header)
 	if err != nil {
 		return nil, err
 	}
 
-	font := &Font{header.ScalerType, make(map[Tag]Table, header.NumTables)}
-
-	entries := make([]directoryEntry, header.NumTables)
+	font := &Font{
+		file:       file,
+		scalerType: header.ScalerType,
+		tables:     make(map[Tag]tableSection, header.NumTables),
+	}
 
 	for i := uint16(0); i < header.NumTables; i++ {
-
-		entry := directoryEntry{}
+		var entry directoryEntry
 		err := binary.Read(file, binary.BigEndian, &entry)
 		if err != nil {
 			return nil, err
 		}
-		entries[i] = entry
-	}
 
-	for _, entry := range entries {
+		// TODO Check the checksum.
 
-		buffer := io.NewSectionReader(file, int64(entry.Offset), int64(entry.Length))
-		table, err := parseTable(entry.Tag, buffer)
-		if err != nil {
-			return nil, err
+		if _, found := font.tables[entry.Tag]; found {
+			return nil, fmt.Errorf("found multiple %q tables", entry.Tag)
 		}
-		font.tables[entry.Tag] = table
 
+		font.tables[entry.Tag] = tableSection{
+			tag: entry.Tag,
+
+			offset: entry.Offset,
+			length: entry.Length,
+		}
 	}
 
-	_, ok := font.tables[TagHead]
-
-	if !ok {
+	if _, ok := font.tables[TagHead]; !ok {
 		return nil, ErrMissingHead
 	}
 

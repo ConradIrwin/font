@@ -51,27 +51,29 @@ type TableOS2 struct {
 	bytes []byte
 }
 
-func parseTableOS2(buffer io.Reader) (*TableOS2, error) {
-	rawBytes, err := ioutil.ReadAll(buffer)
-
+func parseTableOS2(r io.Reader) (Table, error) {
+	buf, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
 
-	mySize := binary.Size(tableOS2Fields{})
-	buf := make([]byte, mySize, mySize)
+	r = bytes.NewBuffer(buf)
 
-	copy(buf, rawBytes)
+	var table tableOS2Fields
+	if err = binary.Read(r, binary.BigEndian, &table); err != nil {
+		// Different versions of the table are different lengths, as such
+		// we may not already read every field.
+		if err != io.ErrUnexpectedEOF {
+			return nil, err
+		}
 
-	readable := bytes.NewBuffer(buf)
-
-	table := tableOS2Fields{}
-	err = binary.Read(readable, binary.BigEndian, &table)
-	if err != nil {
-		return nil, err
+		// TODO Check the len(buf) is expected for this version
 	}
 
-	return &TableOS2{tableOS2Fields: table, bytes: rawBytes}, nil
+	return &TableOS2{
+		tableOS2Fields: table,
+		bytes:          buf,
+	}, nil
 }
 
 func (t *TableOS2) Bytes() []byte {
