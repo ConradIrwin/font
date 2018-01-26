@@ -86,7 +86,7 @@ func parseOTF(file File) (*Font, error) {
 			return nil, fmt.Errorf("found multiple %q tables", entry.Tag)
 		}
 
-		font.tables[entry.Tag] = tableSection{
+		font.tables[entry.Tag] = &tableSection{
 			tag: entry.Tag,
 
 			offset: entry.Offset,

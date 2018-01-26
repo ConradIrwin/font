@@ -37,7 +37,7 @@ func parseWoff(file File) (*Font, error) {
 	font := &Font{
 		file:       file,
 		scalerType: header.Flavor,
-		tables:     make(map[Tag]tableSection, header.NumTables),
+		tables:     make(map[Tag]*tableSection, header.NumTables),
 	}
 
 	for i := uint16(0); i < header.NumTables; i++ {
@@ -52,7 +52,7 @@ func parseWoff(file File) (*Font, error) {
 			return nil, fmt.Errorf("found multiple %q tables", entry.Tag)
 		}
 
-		font.tables[entry.Tag] = tableSection{
+		font.tables[entry.Tag] = &tableSection{
 			tag: entry.Tag,
 
 			offset:  entry.Offset,

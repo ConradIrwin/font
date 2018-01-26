@@ -41,7 +41,7 @@ var ErrMissingTable = errors.New("missing table")
 type Font struct {
 	file       File
 	scalerType Tag
-	tables     map[Tag]tableSection
+	tables     map[Tag]*tableSection
 }
 
 // tableSection represents a table within the font file.
@@ -78,7 +78,7 @@ func (font *Font) HasTable(tag Tag) bool {
 // AddTable adds a table to the font. If a table with the
 // given tag is already present, it will be overwritten.
 func (font *Font) AddTable(tag Tag, table Table) {
-	font.tables[tag] = tableSection{
+	font.tables[tag] = &tableSection{
 		tag:   tag,
 		table: table,
 	}
@@ -187,7 +187,7 @@ func (font *Font) Table(tag Tag) (Table, error) {
 func New(scalerType Tag) *Font {
 	font := &Font{
 		scalerType: scalerType,
-		tables:     make(map[Tag]tableSection),
+		tables:     make(map[Tag]*tableSection),
 	}
 	font.AddTable(TagHead, &TableHead{})
 	return font

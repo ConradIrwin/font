@@ -34,7 +34,7 @@ func newUnparsedTable(buffer io.Reader) (Table, error) {
 	return &unparsedTable{bytes}, nil
 }
 
-func (font *Font) parseTable(s tableSection) (Table, error) {
+func (font *Font) parseTable(s *tableSection) (Table, error) {
 	var reader io.Reader
 	reader = io.NewSectionReader(font.file, int64(s.offset), int64(s.length))
 	if s.zLength > 0 && s.zLength < s.length {
