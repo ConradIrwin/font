@@ -8,7 +8,11 @@ import (
 
 func Metrics(font *sfnt.Font) error {
 	if font.HasTable(sfnt.TagHhea) {
-		hhea := font.HheaTable()
+		hhea, err := font.HheaTable()
+		if err != nil {
+			return err
+		}
+
 		fmt.Println("Ascent:", hhea.Ascent)
 		fmt.Println("Descent:", hhea.Descent)
 		fmt.Println("Line gap:", hhea.LineGap)
@@ -21,9 +25,12 @@ func Metrics(font *sfnt.Font) error {
 	}
 
 	if font.HasTable(sfnt.TagOS2) {
-		fmt.Printf("%#v\n", font.OS2Table())
+		os2, err := font.OS2Table()
+		if err != nil {
+			return err
+		}
 
-		os2 := font.OS2Table()
+		fmt.Printf("%#v\n", os2)
 
 		fmt.Println("Cap Height:", os2.SCapHeight)
 		fmt.Println("Typographic Ascender:", os2.STypoAscender)

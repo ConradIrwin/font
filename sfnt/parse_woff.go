@@ -1,9 +1,8 @@
 package sfnt
 
 import (
-	"compress/zlib"
 	"encoding/binary"
-	"io"
+	"fmt"
 )
 
 type woffHeader struct {
@@ -30,51 +29,41 @@ type woffEntry struct {
 }
 
 func parseWoff(file File) (*Font, error) {
-
-	header := woffHeader{}
-	err := binary.Read(file, binary.BigEndian, &header)
-	if err != nil {
+	var header woffHeader
+	if err := binary.Read(file, binary.BigEndian, &header); err != nil {
 		return nil, err
 	}
 
-	font := &Font{header.Flavor, make(map[Tag]Table, header.NumTables)}
-
-	entries := make([]woffEntry, header.NumTables)
+	font := &Font{
+		file:       file,
+		scalerType: header.Flavor,
+		tables:     make(map[Tag]tableSection, header.NumTables),
+	}
 
 	for i := uint16(0); i < header.NumTables; i++ {
-
-		entry := woffEntry{}
-		err := binary.Read(file, binary.BigEndian, &entry)
-		if err != nil {
+		var entry woffEntry
+		if err := binary.Read(file, binary.BigEndian, &entry); err != nil {
 			return nil, err
 		}
-		entries[i] = entry
+
+		// TODO Check the checksum.
+
+		if _, found := font.tables[entry.Tag]; found {
+			return nil, fmt.Errorf("found multiple %q tables", entry.Tag)
+		}
+
+		font.tables[entry.Tag] = tableSection{
+			tag: entry.Tag,
+
+			offset:  entry.Offset,
+			length:  entry.OrigLength,
+			zLength: entry.CompLength,
+		}
 	}
 
-	for _, entry := range entries {
-
-		var buffer io.Reader
-		buffer = io.NewSectionReader(file, int64(entry.Offset), int64(entry.OrigLength))
-		if entry.CompLength < entry.OrigLength {
-			buffer, err = zlib.NewReader(buffer)
-			if err != nil {
-				return nil, err
-			}
-		}
-		table, err := parseTable(entry.Tag, buffer)
-		if err != nil {
-			return nil, err
-		}
-		font.tables[entry.Tag] = table
-
-	}
-
-	_, ok := font.tables[TagHead]
-
-	if !ok {
+	if _, ok := font.tables[TagHead]; !ok {
 		return nil, ErrMissingHead
 	}
 
 	return font, nil
-
 }

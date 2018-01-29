@@ -16,34 +16,30 @@ var outputOrder = map[Tag]int{
 	TagName: 5,
 }
 
-type outputEntries []Tag
-
-func (o outputEntries) Len() int      { return len(o) }
-func (o outputEntries) Swap(i, j int) { o[i], o[j] = o[j], o[i] }
-func (o outputEntries) Less(i, j int) bool {
-
-	iScore, ok := outputOrder[o[i]]
-	if !ok {
-		iScore = int(o[i].Number)
-	}
-	jScore, ok := outputOrder[o[j]]
-	if !ok {
-		jScore = int(o[j].Number)
-	}
-
-	return iScore < jScore
-}
-
 // WriteOTF serializes a Font into OpenType format suitable
 // for writing to a file such as *.otf.
 // You can also use this to write to files called *.ttf if the
 // font contains TrueType glyphs.
 func (font *Font) WriteOTF(w io.Writer) (n int, err error) {
 
-	todo := outputEntries(font.Tags())
-	sort.Sort(todo)
+	todo := font.Tags()
+	sort.Slice(todo, func(i, j int) bool {
+		iScore, ok := outputOrder[todo[i]]
+		if !ok {
+			iScore = int(todo[i].Number)
+		}
+		jScore, ok := outputOrder[todo[j]]
+		if !ok {
+			jScore = int(todo[j].Number)
+		}
 
-	headTable := font.HeadTable()
+		return iScore < jScore
+	})
+
+	headTable, err := font.HeadTable()
+	if err != nil {
+		return n, err
+	}
 
 	headTable.ClearExpectedChecksum()
 
@@ -61,7 +57,11 @@ func (font *Font) WriteOTF(w io.Writer) (n int, err error) {
 	n += otfHeaderLength
 
 	for i, tag := range todo {
-		fragments[i] = font.tables[tag].Bytes()
+		t, err := font.Table(tag)
+		if err != nil {
+			return n, err
+		}
+		fragments[i] = t.Bytes()
 		entry := directoryEntry{
 			Tag:      tag,
 			CheckSum: checkSum(fragments[i]),

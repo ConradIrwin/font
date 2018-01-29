@@ -9,7 +9,10 @@ import (
 
 func Info(font *sfnt.Font) error {
 	if font.HasTable(sfnt.TagName) {
-		name := font.NameTable()
+		name, err := font.NameTable()
+		if err != nil {
+			return err
+		}
 
 		for _, entry := range name.List() {
 			ids := " (" + strconv.Itoa(int(entry.PlatformID)) + "," + strconv.Itoa(int(entry.EncodingID)) + "," + strconv.Itoa(int(entry.LanguageID)) + "," + strconv.Itoa(int(entry.NameID)) + ") "

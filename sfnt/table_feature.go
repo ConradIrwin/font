@@ -29,6 +29,7 @@ type TableLayout struct {
 // Bytes returns the bytes for this table. The TableLayout is read only, so
 // the bytes will always be the same as what is read in.
 func (t *TableLayout) Bytes() []byte {
+	// TODO Write out the table ourselves (instead of stored bytes)
 	return t.bytes
 }
 
@@ -376,16 +377,17 @@ func (t *TableLayout) parseLookupList() error {
 }
 
 // parseTableLayout parses a common Layout Table used by GPOS and GSUB.
-func parseTableLayout(buffer io.Reader) (*TableLayout, error) {
-	b, err := ioutil.ReadAll(buffer)
+func parseTableLayout(r io.Reader) (Table, error) {
+	buf, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
+
 	t := &TableLayout{
-		bytes: b,
+		bytes: buf,
 	}
 
-	r := bytes.NewReader(b)
+	r = bytes.NewReader(t.bytes)
 	if err := binary.Read(r, binary.BigEndian, &t.version); err != nil {
 		return nil, fmt.Errorf("reading layout version header: %s", err)
 	}

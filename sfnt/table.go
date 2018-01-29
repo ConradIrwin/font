@@ -1,9 +1,19 @@
 package sfnt
 
 import (
+	"compress/zlib"
 	"io"
 	"io/ioutil"
 )
+
+var parsers = map[Tag]tableParser{
+	TagHead: parseTableHead,
+	TagName: parseTableName,
+	TagHhea: parseTableHhea,
+	TagOS2:  parseTableOS2,
+	TagGpos: parseTableLayout,
+	TagGsub: parseTableLayout,
+}
 
 // Table is an interface for each section of the font file.
 type Table interface {
@@ -14,7 +24,9 @@ type unparsedTable struct {
 	bytes []byte
 }
 
-func newUnparsedTable(buffer io.Reader) (*unparsedTable, error) {
+type tableParser func(buffer io.Reader) (Table, error)
+
+func newUnparsedTable(buffer io.Reader) (Table, error) {
 	bytes, err := ioutil.ReadAll(buffer)
 	if err != nil {
 		return nil, err
@@ -22,20 +34,20 @@ func newUnparsedTable(buffer io.Reader) (*unparsedTable, error) {
 	return &unparsedTable{bytes}, nil
 }
 
-func parseTable(tag Tag, buffer io.Reader) (Table, error) {
-	if tag == TagHead {
-		return parseTableHead(buffer)
-	} else if tag == TagName {
-		return parseTableName(buffer)
-	} else if tag == TagHhea {
-		return parseTableHhea(buffer)
-	} else if tag == TagOS2 {
-		return parseTableOS2(buffer)
-	} else if tag == TagGpos {
-		return parseTableLayout(buffer)
-	} else if tag == TagGsub {
-		return parseTableLayout(buffer)
+func (font *Font) parseTable(s tableSection) (Table, error) {
+	var reader io.Reader
+	reader = io.NewSectionReader(font.file, int64(s.offset), int64(s.length))
+	if s.zLength > 0 && s.zLength < s.length {
+		var err error
+		if reader, err = zlib.NewReader(reader); err != nil {
+			return nil, err
+		}
 	}
 
-	return newUnparsedTable(buffer)
+	parser, found := parsers[s.tag]
+	if !found {
+		parser = newUnparsedTable
+	}
+
+	return parser(reader)
 }
