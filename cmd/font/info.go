@@ -1,4 +1,4 @@
-package commands
+package main
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"github.com/ConradIrwin/font/sfnt"
 )
 
+// Info prints the name table (contains metadata).
 func Info(font *sfnt.Font) error {
 	if font.HasTable(sfnt.TagName) {
 		name, err := font.NameTable()

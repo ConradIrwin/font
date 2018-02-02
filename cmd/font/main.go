@@ -1,22 +1,12 @@
+// font is a utility that can parse and print information about font files.
 package main
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/ConradIrwin/font/commands"
 	"github.com/ConradIrwin/font/sfnt"
 )
-
-type Command func(*sfnt.Font) error
-
-var cmds = map[string]Command{
-	"scrub":    commands.Scrub,
-	"info":     commands.Info,
-	"stats":    commands.Stats,
-	"metrics":  commands.Metrics,
-	"features": commands.Features,
-}
 
 func usage() {
 	fmt.Println(`
@@ -36,6 +26,13 @@ func main() {
 		os.Args = os.Args[1:]
 	}
 
+	cmds := map[string]func(*sfnt.Font) error{
+		"scrub":    Scrub,
+		"info":     Info,
+		"stats":    Stats,
+		"metrics":  Metrics,
+		"features": Features,
+	}
 	if _, found := cmds[command]; !found {
 		usage()
 		return

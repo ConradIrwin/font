@@ -1,14 +1,15 @@
-A program for parsing OpenType fonts in Golang.
+A collection of Go packages for parsing and encoding OpenType fonts.
 
 The main contribution of this repository is the [SFNT](https://godoc.org/github.com/ConradIrwin/font/sfnt) library which provides support for parsing OpenType, TrueType and wOFF fonts.
 
-Also included is a sample program called `font` that can do various useful things with fonts:
+Also included is a utility called `font` that can do various useful things with fonts:
 
 ```
-go install github.com/ConradIrwin/font
+go get -u github.com/ConradIrwin/font/cmd/font
 ```
 
 Info gets information about the font from the `name` table:
+
 ```
 font info ~/Downloads/Fanwood.ttf
 ```
@@ -45,4 +46,3 @@ License
 =======
 
 Copyright (c) Conrad Irwin 2015, MIT license. See LICENSE.MIT for details
-
