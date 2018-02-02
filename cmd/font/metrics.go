@@ -1,4 +1,4 @@
-package commands
+package main
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"github.com/ConradIrwin/font/sfnt"
 )
 
+// Metrics prints the hhea table (contains font metrics).
 func Metrics(font *sfnt.Font) error {
 	if font.HasTable(sfnt.TagHhea) {
 		hhea, err := font.HheaTable()
