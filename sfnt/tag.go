@@ -36,8 +36,11 @@ var (
 	// as specified by OpenType
 	TypeOpenType = MustNamedTag("OTTO")
 
-	// SignatureWoff if the magic number at the start of a wOFF file.
-	SignatureWoff = MustNamedTag("wOFF")
+	// SignatureWOFF is the magic number at the start of a WOFF file.
+	SignatureWOFF = MustNamedTag("wOFF")
+
+	// SignatureWOFF2 is the magic number at the start of a WOFF2 file.
+	SignatureWOFF2 = MustNamedTag("wOF2")
 )
 
 // Tag represents an open-type table name.
