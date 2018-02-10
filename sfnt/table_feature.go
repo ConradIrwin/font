@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strconv"
 )
 
@@ -17,6 +16,8 @@ import (
 // See https://www.microsoft.com/typography/otspec/GPOS.htm
 // See https://www.microsoft.com/typography/otspec/GSUB.htm
 type TableLayout struct {
+	baseTable
+
 	bytes   []byte
 	version versionHeader
 	header  layoutHeader11
@@ -377,17 +378,13 @@ func (t *TableLayout) parseLookupList() error {
 }
 
 // parseTableLayout parses a common Layout Table used by GPOS and GSUB.
-func parseTableLayout(r io.Reader) (Table, error) {
-	buf, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, err
-	}
-
+func parseTableLayout(tag Tag, buf []byte) (Table, error) {
 	t := &TableLayout{
-		bytes: buf,
+		baseTable: baseTable(tag),
+		bytes:     buf,
 	}
 
-	r = bytes.NewReader(t.bytes)
+	r := bytes.NewReader(t.bytes)
 	if err := binary.Read(r, binary.BigEndian, &t.version); err != nil {
 		return nil, fmt.Errorf("reading layout version header: %s", err)
 	}

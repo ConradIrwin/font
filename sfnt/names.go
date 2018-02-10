@@ -1,6 +1,78 @@
 package sfnt
 
 var (
+	// tableTags contains to list of table tags.
+	// https://www.microsoft.com/typography/otspec/otff.htm
+	tableTags = map[string]string{
+		// Required Tables
+		"cmap": "Character to glyph mapping",
+		"head": "Font header",
+		"hhea": "Horizontal header",
+		"hmtx": "Horizontal metrics",
+		"maxp": "Maximum profile",
+		"name": "Naming table",
+		"OS/2": "OS/2 and Windows specific metrics",
+		"post": "PostScript information",
+
+		// Tables Related to TrueType Outlines
+		"cvt ": "Control Value Table (optional table)",
+		"fpgm": "Font program (optional table)",
+		"glyf": "Glyph data",
+		"loca": "Index to location",
+		"prep": "CVT Program (optional table)",
+		"gasp": "Grid-fitting/Scan-conversion (optional table)",
+
+		// Tables Related to CFF Outlines
+		"CFF ": "Compact Font Format 1.0",
+		"CFF2": "Compact Font Format 2.0",
+		"VORG": "Vertical Origin (optional table)",
+
+		// Table related to SVG outlines
+		"SVG": "The SVG (Scalable Vector Graphics) table",
+
+		// Tables Related to Bitmap Glyphs
+		"EBDT": "Embedded bitmap data",
+		"EBLC": "Embedded bitmap location data",
+		"EBSC": "Embedded bitmap scaling data",
+		"CBDT": "Color bitmap data",
+		"CBLC": "Color bitmap location data",
+		"sbix": "Standard bitmap graphics",
+
+		// Advanced Typographic Tables
+		"BASE": "Baseline data",
+		"GDEF": "Glyph definition data",
+		"GPOS": "Glyph positioning data",
+		"GSUB": "Glyph substitution data",
+		"JSTF": "Justification data",
+		"MATH": "Math layout data",
+
+		// Tables used for OpenType Font Variations
+		"avar": "Axis variations",
+		"cvar": "CVT variations (TrueType outlines only)",
+		"fvar": "Font variations",
+		"gvar": "Glyph variations (TrueType outlines only)",
+		"HVAR": "Horizontal metrics variations",
+		"MVAR": "Metrics variations",
+		"STAT": "Style attributes (required for variable fonts, optional for non-variable fonts)",
+		"VVAR": "Vertical metrics variations",
+
+		// Tables Related to Color Fonts
+		"COLR": "Color table",
+		"CPAL": "Color palette table",
+
+		// Other OpenType Tables
+		"DSIG": "Digital signature",
+		"hdmx": "Horizontal device metrics",
+		"kern": "Kerning",
+		"LTSH": "Linear threshold data",
+		"MERG": "Merge",
+		"meta": "Metadata",
+		"PCLT": "PCL 5 data",
+		"VDMX": "Vertical device metrics",
+		"vhea": "Vertical Metrics header",
+		"vmtx": "Vertical Metrics",
+	}
+
 	// languageTags contains the registered language names mapped by tag.
 	// See https://www.microsoft.com/typography/otspec/languagetags.htm
 	languageTags = map[string]string{

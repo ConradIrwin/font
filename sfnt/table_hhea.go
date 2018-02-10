@@ -3,10 +3,14 @@ package sfnt
 import (
 	"bytes"
 	"encoding/binary"
-	"io"
 )
 
 type TableHhea struct {
+	baseTable
+	tableHheaFields
+}
+
+type tableHheaFields struct {
 	Version             fixed
 	Ascent              int16
 	Descent             int16
@@ -26,12 +30,17 @@ type TableHhea struct {
 	NumOfLongHorMetrics int16
 }
 
-func parseTableHhea(r io.Reader) (Table, error) {
-	var table TableHhea
-	if err := binary.Read(r, binary.BigEndian, &table); err != nil {
+func parseTableHhea(tag Tag, buf []byte) (Table, error) {
+	r := bytes.NewBuffer(buf)
+
+	var fields tableHheaFields
+	if err := binary.Read(r, binary.BigEndian, &fields); err != nil {
 		return nil, err
 	}
-	return &table, nil
+	return &TableHhea{
+		baseTable:       baseTable(tag),
+		tableHheaFields: fields,
+	}, nil
 }
 
 // Bytes returns the byte representation of this header.

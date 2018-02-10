@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
-	"io/ioutil"
 )
 
 type tableOS2Fields struct {
@@ -47,20 +46,16 @@ type tableOS2Fields struct {
 }
 
 type TableOS2 struct {
+	baseTable
 	tableOS2Fields
 	bytes []byte
 }
 
-func parseTableOS2(r io.Reader) (Table, error) {
-	buf, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, err
-	}
-
-	r = bytes.NewBuffer(buf)
+func parseTableOS2(tag Tag, buf []byte) (Table, error) {
+	r := bytes.NewBuffer(buf)
 
 	var table tableOS2Fields
-	if err = binary.Read(r, binary.BigEndian, &table); err != nil {
+	if err := binary.Read(r, binary.BigEndian, &table); err != nil {
 		// Different versions of the table are different lengths, as such
 		// we may not already read every field.
 		if err != io.ErrUnexpectedEOF {
@@ -71,6 +66,7 @@ func parseTableOS2(r io.Reader) (Table, error) {
 	}
 
 	return &TableOS2{
+		baseTable:      baseTable(tag),
 		tableOS2Fields: table,
 		bytes:          buf,
 	}, nil

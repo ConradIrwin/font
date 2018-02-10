@@ -18,28 +18,46 @@ var parsers = map[Tag]tableParser{
 // Table is an interface for each section of the font file.
 type Table interface {
 	Bytes() []byte
+	Name() string // Name returns the name of the table.
+}
+
+type baseTable Tag
+
+// Name returns the name of the table represented by this tag.
+func (b baseTable) Name() string {
+	return tableTags[Tag(b).String()]
 }
 
 type unparsedTable struct {
-	bytes []byte
+	baseTable
+
+	bytes []byte // Uncompress content of this table.
 }
 
-type tableParser func(buffer io.Reader) (Table, error)
+type tableParser func(tag Tag, buffer []byte) (Table, error)
 
-func newUnparsedTable(buffer io.Reader) (Table, error) {
-	bytes, err := ioutil.ReadAll(buffer)
-	if err != nil {
-		return nil, err
-	}
-	return &unparsedTable{bytes}, nil
+func newUnparsedTable(tag Tag, buffer []byte) (Table, error) {
+	return &unparsedTable{baseTable(tag), buffer}, nil
 }
 
 func (font *Font) parseTable(s *tableSection) (Table, error) {
-	var reader io.Reader
-	reader = io.NewSectionReader(font.file, int64(s.offset), int64(s.length))
-	if s.zLength > 0 && s.zLength < s.length {
-		var err error
-		if reader, err = zlib.NewReader(reader); err != nil {
+	var buf []byte
+
+	if s.length != 0 && s.length < s.zLength {
+		zbuf := io.NewSectionReader(font.file, int64(s.offset), int64(s.length))
+		r, err := zlib.NewReader(zbuf)
+		if err != nil {
+			return nil, err
+		}
+		defer r.Close()
+
+		buf = make([]byte, s.zLength, s.zLength)
+		if _, err := io.ReadFull(r, buf); err != nil {
+			return nil, err
+		}
+	} else {
+		buf = make([]byte, s.length, s.length)
+		if _, err := font.file.ReadAt(buf, int64(s.offset)); err != nil {
 			return nil, err
 		}
 	}
@@ -49,5 +67,5 @@ func (font *Font) parseTable(s *tableSection) (Table, error) {
 		parser = newUnparsedTable
 	}
 
-	return parser(reader)
+	return parser(s.tag, buf)
 }
