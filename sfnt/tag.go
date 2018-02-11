@@ -27,11 +27,17 @@ var (
 
 	// TypeTrueType is the first four bytes of an OpenType file containing a TrueType font
 	TypeTrueType = Tag{0x00010000}
+
 	// TypeAppleTrueType is the first four bytes of an OpenType file containing a TrueType font
 	// (specifically one designed for Apple products, it's recommended to use TypeTrueType instead)
 	TypeAppleTrueType = MustNamedTag("true")
+
 	// TypePostScript1 is the first four bytes of an OpenType file containing a PostScript Type 1 font
 	TypePostScript1 = MustNamedTag("typ1")
+
+	// TypeTrueTypeCollection if the magic number at the start of a True Type Collection file.
+	TypeTrueTypeCollection = MustNamedTag("ttcf")
+
 	// TypeOpenType is the first four bytes of an OpenType file containing a PostScript Type 2 font
 	// as specified by OpenType
 	TypeOpenType = MustNamedTag("OTTO")

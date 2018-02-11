@@ -18,6 +18,9 @@ func TestSmokeTest(t *testing.T) {
 		{filename: "Roboto-BoldItalic.ttf"},
 		{filename: "Raleway-v4020-Regular.otf"},
 		{filename: "open-sans-v15-latin-regular.woff"},
+		{filename: "NotoColorEmoji.ttf"},
+		{filename: "NotoSansCJKjp-Regular.otf"},
+		//{filename: "NotoSerifCJK-Regular.ttc"},
 	}
 
 	for _, test := range tests {
