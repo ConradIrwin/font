@@ -3,7 +3,6 @@ package sfnt
 import (
 	"compress/zlib"
 	"io"
-	"io/ioutil"
 )
 
 var parsers = map[Tag]tableParser{

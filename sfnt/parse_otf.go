@@ -68,7 +68,7 @@ func readOtfHeaderFast(r io.Reader, header *otfHeader) error {
 		return err
 	}
 
-	header.ScalerType = Tag{binary.BigEndian.Uint32(buf[0:4])}
+	header.ScalerType = NewTag(buf[0:4])
 	header.NumTables = binary.BigEndian.Uint16(buf[4:6])
 	header.SearchRange = binary.BigEndian.Uint16(buf[6:8])
 	header.EntrySelector = binary.BigEndian.Uint16(buf[8:10])
@@ -87,7 +87,7 @@ func readDirectoryEntryFast(r io.Reader, entry *directoryEntry) error {
 		return err
 	}
 
-	entry.Tag = Tag{binary.BigEndian.Uint32(buf[0:4])}
+	entry.Tag = NewTag(buf[0:4])
 	entry.CheckSum = binary.BigEndian.Uint32(buf[4:8])
 	entry.Offset = binary.BigEndian.Uint32(buf[8:12])
 	entry.Length = binary.BigEndian.Uint32(buf[12:16])
@@ -104,7 +104,8 @@ func parseOTF(file File) (*Font, error) {
 	}
 
 	font := &Font{
-		file:       file,
+		file: file,
+
 		scalerType: header.ScalerType,
 		tables:     make(map[Tag]*tableSection, header.NumTables),
 	}

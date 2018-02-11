@@ -1,7 +1,6 @@
 package sfnt
 
 import (
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"sort"
@@ -205,8 +204,8 @@ type File interface {
 // Parse parses an OpenType, TrueType or wOFF File and returns a Font.
 // If parsing fails, an error is returned and *Font will be nil.
 func Parse(file File) (*Font, error) {
-	var magic Tag
-	if err := binary.Read(file, binary.BigEndian, &magic); err != nil {
+	magic, err := ReadTag(file)
+	if err != nil {
 		return nil, err
 	}
 

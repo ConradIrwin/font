@@ -39,8 +39,8 @@ func readWoffHeaderFast(r io.Reader, header *woffHeader) error {
 		return err
 	}
 
-	header.Signature = Tag{binary.BigEndian.Uint32(buf[0:4])}
-	header.Flavor = Tag{binary.BigEndian.Uint32(buf[4:8])}
+	header.Signature = NewTag(buf[0:4])
+	header.Flavor = NewTag(buf[4:8])
 	header.Length = binary.BigEndian.Uint32(buf[8:12])
 	header.NumTables = binary.BigEndian.Uint16(buf[12:14])
 	header.Reserved = binary.BigEndian.Uint16(buf[14:16])
@@ -65,7 +65,7 @@ func readWoffEntryFast(r io.Reader, entry *woffEntry) error {
 	if _, err := io.ReadFull(r, buf[:]); err != nil {
 		return err
 	}
-	entry.Tag = Tag{binary.BigEndian.Uint32(buf[0:4])}
+	entry.Tag = NewTag(buf[0:4])
 	entry.Offset = binary.BigEndian.Uint32(buf[4:8])
 	entry.CompLength = binary.BigEndian.Uint32(buf[8:12])
 	entry.OrigLength = binary.BigEndian.Uint32(buf[12:16])
