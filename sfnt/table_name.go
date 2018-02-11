@@ -244,7 +244,6 @@ func parseTableName(r io.Reader) (Table, error) {
 		end := start + record.Length
 
 		if int(start) > len(table.bytes) || int(end) > len(table.bytes) {
-			fmt.Printf("[%d] buf: %d, %d %d\n", i, len(buf), start, end)
 			return nil, io.ErrUnexpectedEOF
 		}
 

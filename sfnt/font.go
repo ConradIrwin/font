@@ -222,7 +222,7 @@ func Parse(file File) (*Font, error) {
 	return nil, ErrUnsupportedFormat
 }
 
-// Parse parses an OpenType, TrueType or wOFF File and returns a Font.
+// StrictParse parses an OpenType, TrueType or wOFF File and returns a Font.
 // Each table will be fully parsed and an error is returned if any fail.
 func StrictParse(file File) (*Font, error) {
 	font, err := Parse(file)
