@@ -120,6 +120,15 @@ func (font *Font) HeadTable() (*TableHead, error) {
 	return t.(*TableHead), nil
 }
 
+// CmapTable returns the Character To Glyph table corresponding to the 'cmap' tag.
+func (font *Font) CmapTable() (*TableCmap, error) {
+	t, err := font.Table(TagCmap)
+	if err != nil {
+		return nil, err
+	}
+	return t.(*TableCmap), nil
+}
+
 // NameTable returns the table corresponding to the 'name' tag.
 func (font *Font) NameTable() (*TableName, error) {
 	t, err := font.Table(TagName)

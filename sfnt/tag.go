@@ -22,6 +22,8 @@ var (
 	TagGpos = MustNamedTag("GPOS")
 	// TagGsub represents the 'GSUB' table, which contains Glyph Substitution features
 	TagGsub = MustNamedTag("GSUB")
+	// TagCmap represents the 'cmap' table, which contains Character to glyph mapping
+	TagCmap = MustNamedTag("cmap")
 
 	// TypeTrueType is the first four bytes of an OpenType file containing a TrueType font
 	TypeTrueType = Tag{0x00010000}

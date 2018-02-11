@@ -3,7 +3,6 @@ package sfnt
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"strconv"
