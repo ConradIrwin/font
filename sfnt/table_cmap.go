@@ -217,21 +217,31 @@ func parseCmapFormat4(r io.Reader) (*cmapFormat4, error) {
 	return &subtable, nil
 }
 
-// validCmapFormat returns true iff this cmap format is valid for this Platform and Encoding ID.
-func validCmapFormat(platform PlatformID, encoding PlatformEncodingID, format int) error {
-	if platform == PlatformUnicode {
-		if encoding == 3 && !(format == 0 || format == 4 || format == 6) {
-			return fmt.Errorf("%s %s requires format [0, 4 or 6] not %d", platform, encoding.String(platform), format)
+// validCmapFormat returns true iff this cmap format is valid based on the Platform and Encoding ID.
+func validCmapFormat(t *EncodingSubtable) error {
+	var allowed []EncodingFormatID
+
+	if t.Platform == PlatformUnicode {
+		switch t.Encoding {
+		case 3:
+			allowed = []EncodingFormatID{0, 4, 6}
+		case 4:
+			allowed = []EncodingFormatID{0, 4, 6, 10, 12}
+		case 5:
+			allowed = []EncodingFormatID{14}
+		case 6:
+			allowed = []EncodingFormatID{0, 4, 6, 10, 12, 13}
 		}
-		if encoding == 4 && !(format == 0 || format == 4 || format == 6 || format == 10 || format == 12) {
-			return fmt.Errorf("%s %s requires format [0, 4, 6, 10 or 12] not %d", platform, encoding.String(platform), format)
+	}
+
+	if len(allowed) > 0 {
+		for _, format := range allowed {
+			if t.Format == format {
+				return nil
+			}
 		}
-		if encoding == 5 && !(format == 14) {
-			return fmt.Errorf("%s %s requires format [14] not %d", platform, encoding.String(platform), format)
-		}
-		if encoding == 6 && !(format == 0 || format == 4 || format == 6 || format == 10 || format == 12 || format == 13) {
-			return fmt.Errorf("%s %s requires format [0, 4, 6, 10, 12, 13] not %d", platform, encoding.String(platform), format)
-		}
+
+		return fmt.Errorf("%s %s requires format %v not %d", t.Platform, t.Encoding.String(t.Platform), allowed, t.Format)
 	}
 
 	return nil
@@ -263,14 +273,20 @@ func parseTableCmap(r io.Reader) (Table, error) {
 			return nil, fmt.Errorf("reading cmapEncodingRecord[%d]: %s", i, err)
 		}
 
+		encoding := &EncodingSubtable{
+			Platform: PlatformID(record.PlatformID),
+			Encoding: PlatformEncodingID(record.EncodingID),
+		}
+
 		r := bytes.NewReader(buf[record.Offset:])
 
 		var format uint16
 		if err := binary.Read(r, binary.BigEndian, &format); err != nil {
 			return nil, fmt.Errorf("reading cmapEncodingTable[%d] at offset 0x%x: %s", i, record.Offset, err)
 		}
+		encoding.Format = EncodingFormatID(format)
 
-		if err := validCmapFormat(record.PlatformID, record.EncodingID, format); err != nil {
+		if err := validCmapFormat(encoding); err != nil {
 			return nil, fmt.Errorf("invalid format for cmapEncodingTable[%d] at offset 0x%x: %s", i, record.Offset, err)
 		}
 
@@ -285,13 +301,9 @@ func parseTableCmap(r io.Reader) (Table, error) {
 			subtable = &cmapUnsupportedFormat{}
 		}
 
-		t.Encodings = append(t.Encodings, &EncodingSubtable{
-			Platform: PlatformID(record.PlatformID),
-			Encoding: PlatformEncodingID(record.EncodingID),
-			Format:   EncodingFormatID(format),
+		encoding.subtable = subtable
 
-			subtable: subtable,
-		})
+		t.Encodings = append(t.Encodings, encoding)
 	}
 
 	return t, nil
