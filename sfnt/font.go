@@ -38,7 +38,8 @@ var ErrMissingTable = errors.New("missing table")
 // exist. In particular, there's a big different between TrueType glyphs (usually .ttf)
 // and CFF/PostScript Type 2 glyphs (usually .otf)
 type Font struct {
-	file       File
+	file File
+
 	scalerType Tag
 	tables     map[Tag]*tableSection
 }

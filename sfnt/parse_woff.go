@@ -52,7 +52,6 @@ func readWoffHeaderFast(r io.Reader, header *woffHeader) error {
 	header.MetaOrigLength = binary.BigEndian.Uint32(buf[32:36])
 	header.PrivOffset = binary.BigEndian.Uint32(buf[36:40])
 	header.PrivLength = binary.BigEndian.Uint32(buf[40:44])
-
 	return nil
 }
 
@@ -85,7 +84,7 @@ func parseWoff(file File) (*Font, error) {
 		tables:     make(map[Tag]*tableSection, header.NumTables),
 	}
 
-	for i := uint16(0); i < header.NumTables; i++ {
+	for i := 0; i < int(header.NumTables); i++ {
 		var entry woffEntry
 		if err := readWoffEntryFast(file, &entry); err != nil {
 			return nil, err

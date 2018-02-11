@@ -126,7 +126,6 @@ func (font *Font) WriteOTF(w io.Writer) (n int, err error) {
 }
 
 func checkSum(buffer []byte) uint32 {
-
 	total := uint32(0)
 
 	for len(buffer) >= 4 {
