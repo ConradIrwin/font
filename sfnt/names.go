@@ -892,4 +892,32 @@ var (
 		"zhcn": "Simplified Chinese Forms (Deprecated)",
 		"zhtw": "Traditional Chinese Forms (Deprecated)",
 	}
+
+	platformNames = map[PlatformID]string{
+		PlatformUnicode:   "Unicode",
+		PlatformMac:       "Mac",
+		PlatformMicrosoft: "Microsoft",
+	}
+
+	platformEncodingNames = map[platformEncodingPair]string{
+		{PlatformUnicode, 0}: "1.0 semantics",
+		{PlatformUnicode, 1}: "1.1 semantics",
+		{PlatformUnicode, 2}: "ISO/IEC 10646 semantics",
+		{PlatformUnicode, 3}: "2.0 and onwards semantics, Unicode BMP only",
+		{PlatformUnicode, 4}: "2.0 and onwards semantics, Unicode full repertoire",
+		{PlatformUnicode, 5}: "Variation Sequences",
+		{PlatformUnicode, 6}: "Full repertoire",
+
+		{PlatformMac, PlatformEncodingMacRoman}: "Roman",
+		{PlatformMac, 1}:                        "Japanese",
+
+		{PlatformMicrosoft, PlatformEncodingMicrosoftSymbol}:   "Symbol",
+		{PlatformMicrosoft, PlatformEncodingMicrosoftUnicode}:  "Unicode BMP (UCS-2)",
+		{PlatformMicrosoft, PlatformEncodingMicrosoftShiftJIS}: "ShiftJIS",
+		{PlatformMicrosoft, PlatformEncodingMicrosoftPRC}:      "PRC",
+		{PlatformMicrosoft, PlatformEncodingMicrosoftBig5}:     "Big5",
+		{PlatformMicrosoft, PlatformEncodingMicrosoftWansung}:  "Wansung",
+		{PlatformMicrosoft, PlatformEncodingMicrosoftJohab}:    "Johab",
+		{PlatformMicrosoft, PlatformEncodingMicrosoftUnicode4}: "Unicode UCS-4",
+	}
 )

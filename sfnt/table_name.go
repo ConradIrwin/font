@@ -39,16 +39,11 @@ var (
 
 // String returns an idenfying string for each platform or "Platform X" for unknown values.
 func (p PlatformID) String() string {
-	switch p {
-	case PlatformUnicode:
-		return "Unicode"
-	case PlatformMac:
-		return "Mac"
-	case PlatformMicrosoft:
-		return "Microsoft"
-	default:
+	name, found := platformNames[p]
+	if !found {
 		return "Platform " + strconv.Itoa(int(p))
 	}
+	return name
 }
 
 // PlatformEncodingID represents the platform specific id for entries in the name table.
@@ -56,10 +51,31 @@ func (p PlatformID) String() string {
 type PlatformEncodingID uint16
 
 var (
-	PlatformEncodingMacRoman         = PlatformEncodingID(0)
-	PlatformEncodingUnicodeDefault   = PlatformEncodingID(0)
-	PlatformEncodingMicrosoftUnicode = PlatformEncodingID(1)
+	PlatformEncodingMacRoman       = PlatformEncodingID(0)
+	PlatformEncodingUnicodeDefault = PlatformEncodingID(0)
+
+	PlatformEncodingMicrosoftSymbol   = PlatformEncodingID(0)
+	PlatformEncodingMicrosoftUnicode  = PlatformEncodingID(1)
+	PlatformEncodingMicrosoftShiftJIS = PlatformEncodingID(2)
+	PlatformEncodingMicrosoftPRC      = PlatformEncodingID(3)
+	PlatformEncodingMicrosoftBig5     = PlatformEncodingID(4)
+	PlatformEncodingMicrosoftWansung  = PlatformEncodingID(5)
+	PlatformEncodingMicrosoftJohab    = PlatformEncodingID(6)
+	PlatformEncodingMicrosoftUnicode4 = PlatformEncodingID(10)
 )
+
+type platformEncodingPair struct {
+	PlatformID
+	PlatformEncodingID
+}
+
+func (e PlatformEncodingID) String(p PlatformID) string {
+	name, found := platformEncodingNames[platformEncodingPair{p, e}]
+	if !found {
+		return "Encoding " + strconv.Itoa(int(e))
+	}
+	return name
+}
 
 // PlatformLanguageID represents the language used by an entry in the name table,
 // the three most common values are provided as constants.
