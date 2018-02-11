@@ -50,8 +50,8 @@ type tableSection struct {
 	table Table
 
 	offset  uint32 // Offset into the file this table starts.
-	length  uint32 // (Uncompressed) Length of this table
-	zLength uint32 // Compressed length of this table
+	length  uint32 // Length of this table within the file.
+	zLength uint32 // Uncompressed length of this table.
 }
 
 // Tags is the list of tags that are defined in this font, sorted by numeric value.

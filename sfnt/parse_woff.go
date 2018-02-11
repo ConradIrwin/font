@@ -101,8 +101,8 @@ func parseWoff(file File) (*Font, error) {
 			tag: entry.Tag,
 
 			offset:  entry.Offset,
-			length:  entry.OrigLength,
-			zLength: entry.CompLength,
+			length:  entry.CompLength,
+			zLength: entry.OrigLength,
 		}
 	}
 
