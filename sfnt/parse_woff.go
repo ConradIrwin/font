@@ -29,11 +29,11 @@ type woffEntry struct {
 	OrigChecksum uint32
 }
 
-func readWoffHeader(r io.Reader, header *woffHeader) error {
+func readWOFFHeader(r io.Reader, header *woffHeader) error {
 	return binary.Read(r, binary.BigEndian, header)
 }
 
-func readWoffHeaderFast(r io.Reader, header *woffHeader) error {
+func readWOFFHeaderFast(r io.Reader, header *woffHeader) error {
 	var buf [44]byte
 	if _, err := io.ReadFull(r, buf[:]); err != nil {
 		return err
@@ -55,11 +55,11 @@ func readWoffHeaderFast(r io.Reader, header *woffHeader) error {
 	return nil
 }
 
-func readWoffEntry(r io.Reader, entry *woffEntry) error {
+func readWOFFEntry(r io.Reader, entry *woffEntry) error {
 	return binary.Read(r, binary.BigEndian, entry)
 }
 
-func readWoffEntryFast(r io.Reader, entry *woffEntry) error {
+func readWOFFEntryFast(r io.Reader, entry *woffEntry) error {
 	var buf [20]byte
 	if _, err := io.ReadFull(r, buf[:]); err != nil {
 		return err
@@ -72,9 +72,9 @@ func readWoffEntryFast(r io.Reader, entry *woffEntry) error {
 	return nil
 }
 
-func parseWoff(file File) (*Font, error) {
+func parseWOFF(file File) (*Font, error) {
 	var header woffHeader
-	if err := readWoffHeaderFast(file, &header); err != nil {
+	if err := readWOFFHeaderFast(file, &header); err != nil {
 		return nil, err
 	}
 
@@ -86,7 +86,7 @@ func parseWoff(file File) (*Font, error) {
 
 	for i := 0; i < int(header.NumTables); i++ {
 		var entry woffEntry
-		if err := readWoffEntryFast(file, &entry); err != nil {
+		if err := readWOFFEntryFast(file, &entry); err != nil {
 			return nil, err
 		}
 

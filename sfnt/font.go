@@ -32,7 +32,7 @@ var ErrUnsupportedFormat = errors.New("unsupported font format")
 var ErrMissingTable = errors.New("missing table")
 
 // Font represents a SFNT font, which is the underlying representation found
-// in .otf and .ttf files (and .woff and .eot files)
+// in .otf and .ttf files (and .woff, .woff2, .eot files)
 // SFNT is a container format, which contains a number of tables identified by
 // Tags. Depending on the type of glyphs embedded in the file which tables will
 // exist. In particular, there's a big different between TrueType glyphs (usually .ttf)
@@ -202,7 +202,7 @@ type File interface {
 	Seek(int64, int) (int64, error)
 }
 
-// Parse parses an OpenType, TrueType or wOFF File and returns a Font.
+// Parse parses an OpenType, TrueType, WOFF, or WOFF2 file and returns a Font.
 // If parsing fails, an error is returned and *Font will be nil.
 func Parse(file File) (*Font, error) {
 	magic, err := ReadTag(file)
@@ -212,17 +212,19 @@ func Parse(file File) (*Font, error) {
 
 	file.Seek(0, 0)
 
-	if magic == SignatureWoff {
-		return parseWoff(file)
-	}
-	if magic == TypeTrueType || magic == TypeOpenType || magic == TypePostScript1 || magic == TypeAppleTrueType {
+	switch magic {
+	case SignatureWOFF:
+		return parseWOFF(file)
+	case SignatureWOFF2:
+		return parseWOFF2(file)
+	case TypeTrueType, TypeOpenType, TypePostScript1, TypeAppleTrueType:
 		return parseOTF(file)
+	default:
+		return nil, ErrUnsupportedFormat
 	}
-
-	return nil, ErrUnsupportedFormat
 }
 
-// Parse parses an OpenType, TrueType or wOFF File and returns a Font.
+// StrictParse parses an OpenType, TrueType, WOFF or WOFF2 file and returns a Font.
 // Each table will be fully parsed and an error is returned if any fail.
 func StrictParse(file File) (*Font, error) {
 	font, err := Parse(file)

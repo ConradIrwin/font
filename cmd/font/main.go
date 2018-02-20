@@ -10,7 +10,7 @@ import (
 
 func usage() {
 	fmt.Println(`
-Usage: font [features|info|metrics|scrub|stats] font.[otf,ttf,woff]
+Usage: font [features|info|metrics|scrub|stats] font.[otf,ttf,woff,woff2]
 
 features: prints the gpos/gsub tables (contains font features)
 info: prints the name table (contains metadata)

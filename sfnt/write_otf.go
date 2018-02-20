@@ -43,7 +43,7 @@ func (font *Font) WriteOTF(w io.Writer) (n int, err error) {
 
 	headTable.ClearExpectedChecksum()
 
-	header := newOtfHeader(font.scalerType, uint16(len(todo)))
+	header := newOTFHeader(font.scalerType, uint16(len(todo)))
 
 	fragments := make([][]byte, len(todo))
 
