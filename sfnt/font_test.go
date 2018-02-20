@@ -44,13 +44,13 @@ func TestSmokeTest(t *testing.T) {
 
 // benchmarkParse tests the performance of a simple Parse.
 // Example run:
-//   go test -cpuprofile cpu.prof -bench . -run=^$ -benchtime=30s
+//   go test -cpuprofile cpu.prof -benchmem -memprofile mem.prof -bench . -run=^$ -benchtime=30s github.com/ConradIrwin/font/sfnt
 //   go tool pprof cpu.prof
 //
-// BenchmarkParseOtf-8          	 5000000	      2784 ns/op	    1440 B/op	      33 allocs/op
-// BenchmarkStrictParseOtf-8    	  100000	    185088 ns/op	  372422 B/op	    1615 allocs/op
-// BenchmarkParseWoff-8         	 5000000	      3573 ns/op	    2005 B/op	      41 allocs/op
-// BenchmarkStrictParseWoff-8   	   20000	    615948 ns/op	  543514 B/op	     484 allocs/op
+// BenchmarkParseOtf-8             20000000              2838 ns/op            1424 B/op         32 allocs/op
+// BenchmarkStrictParseOtf-8         200000            193842 ns/op          372613 B/op       1617 allocs/op
+// BenchmarkParseWoff-8            10000000              3742 ns/op            2005 B/op         41 allocs/op
+// BenchmarkStrictParseWoff-8        100000            660052 ns/op          575993 B/op        498 allocs/op
 func benchmarkParse(b *testing.B, filename string) {
 	buf, err := ioutil.ReadFile(filepath.Join("testdata", filename))
 	if err != nil {

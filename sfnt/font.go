@@ -1,7 +1,6 @@
 package sfnt
 
 import (
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"sort"
@@ -39,9 +38,10 @@ var ErrMissingTable = errors.New("missing table")
 // exist. In particular, there's a big different between TrueType glyphs (usually .ttf)
 // and CFF/PostScript Type 2 glyphs (usually .otf)
 type Font struct {
-	file       File
+	file File
+
 	scalerType Tag
-	tables     map[Tag]tableSection
+	tables     map[Tag]*tableSection
 }
 
 // tableSection represents a table within the font file.
@@ -50,8 +50,8 @@ type tableSection struct {
 	table Table
 
 	offset  uint32 // Offset into the file this table starts.
-	length  uint32 // (Uncompressed) Length of this table
-	zLength uint32 // Compressed length of this table
+	length  uint32 // Length of this table within the file.
+	zLength uint32 // Uncompressed length of this table.
 }
 
 // Tags is the list of tags that are defined in this font, sorted by numeric value.
@@ -78,7 +78,7 @@ func (font *Font) HasTable(tag Tag) bool {
 // AddTable adds a table to the font. If a table with the
 // given tag is already present, it will be overwritten.
 func (font *Font) AddTable(tag Tag, table Table) {
-	font.tables[tag] = tableSection{
+	font.tables[tag] = &tableSection{
 		tag:   tag,
 		table: table,
 	}
@@ -187,7 +187,7 @@ func (font *Font) Table(tag Tag) (Table, error) {
 func New(scalerType Tag) *Font {
 	font := &Font{
 		scalerType: scalerType,
-		tables:     make(map[Tag]tableSection),
+		tables:     make(map[Tag]*tableSection),
 	}
 	font.AddTable(TagHead, &TableHead{})
 	return font
@@ -205,8 +205,8 @@ type File interface {
 // Parse parses an OpenType, TrueType or wOFF File and returns a Font.
 // If parsing fails, an error is returned and *Font will be nil.
 func Parse(file File) (*Font, error) {
-	var magic Tag
-	if err := binary.Read(file, binary.BigEndian, &magic); err != nil {
+	magic, err := ReadTag(file)
+	if err != nil {
 		return nil, err
 	}
 

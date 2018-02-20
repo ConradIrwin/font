@@ -1,8 +1,10 @@
 package sfnt
 
 import (
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"io"
 )
 
 var (
@@ -68,6 +70,16 @@ func MustNamedTag(str string) Tag {
 		panic(err)
 	}
 	return t
+}
+
+func NewTag(bytes []byte) Tag {
+	return Tag{Number: binary.BigEndian.Uint32(bytes)}
+}
+
+func ReadTag(r io.Reader) (Tag, error) {
+	bytes := make([]byte, 4)
+	_, err := io.ReadFull(r, bytes)
+	return NewTag(bytes), err
 }
 
 // String returns the ASCII representation of the tag.

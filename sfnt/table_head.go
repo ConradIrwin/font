@@ -3,12 +3,16 @@ package sfnt
 import (
 	"bytes"
 	"encoding/binary"
-	"io"
 )
 
 // TableHead contains critical information about the rest of the font.
 // https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6head.html
 type TableHead struct {
+	baseTable
+	tableHeadFields
+}
+
+type tableHeadFields struct {
 	VersionNumber      fixed
 	FontRevision       fixed
 	CheckSumAdjustment uint32
@@ -28,12 +32,18 @@ type TableHead struct {
 	GlyphDataFormat    int16
 }
 
-func parseTableHead(r io.Reader) (Table, error) {
-	var table TableHead
-	if err := binary.Read(r, binary.BigEndian, &table); err != nil {
+func parseTableHead(tag Tag, buf []byte) (Table, error) {
+	r := bytes.NewBuffer(buf)
+
+	var fields tableHeadFields
+	if err := binary.Read(r, binary.BigEndian, &fields); err != nil {
 		return nil, err
 	}
-	return &table, nil
+
+	return &TableHead{
+		baseTable:       baseTable(tag),
+		tableHeadFields: fields,
+	}, nil
 }
 
 // Bytes returns the byte representation of this header.

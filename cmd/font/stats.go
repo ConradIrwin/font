@@ -14,7 +14,7 @@ func Stats(font *sfnt.Font) error {
 			return err
 		}
 
-		fmt.Println(tag, len(table.Bytes()))
+		fmt.Printf("%6d %q %s\n", len(table.Bytes()), tag, table.Name())
 	}
 	return nil
 }
