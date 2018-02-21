@@ -1,3 +1,8 @@
+font
+====
+
+[![Build Status](https://travis-ci.org/ConradIrwin/font.svg?branch=master)](https://travis-ci.org/ConradIrwin/font) [![GoDoc](https://godoc.org/github.com/ConradIrwin/font?status.svg)](https://godoc.org/github.com/ConradIrwin/font)
+
 A collection of Go packages for parsing and encoding OpenType fonts.
 
 The main contribution of this repository is the [SFNT](https://godoc.org/github.com/ConradIrwin/font/sfnt) library which provides support for parsing OpenType, TrueType, WOFF, and WOFF2 fonts.
@@ -27,12 +32,12 @@ font stats ~/Downloads/Fanwood.ttf
 ```
 
 TODO
-====
+----
 
 Still missing is support for parsing EOT files (which should be easy to add). Also support for generating WOFF files (which is annoyingly fiddly due to the checksum calculation) and WOFF2 files (needs a Brotli encoder), and a whole load of code around dealing with the hundreds of other SFNT table formats.
 
 Font file formats
-=================
+-----------------
 
 On the web there are four main types of font file, TrueType, OpenType, WOFF, WOFF2, and EOT. They all represent the same SFNT information, but are encoded slightly differently. You may also come across SVG fonts, which are a totally different beast.
 
@@ -43,6 +48,6 @@ tables which contain meta-data about the font (its Name, Copyright Information, 
 To confuse things further, OpenType fonts use exactly the same format as TrueType fonts, and a WOFF file can contain an OpenType glyphs or a TrueType glyphs. There's no good solution to the ambiguity in terminolgy, just be aware of it.
 
 License
-=======
+-------
 
 Copyright (c) Conrad Irwin 2015, MIT license. See LICENSE.MIT for details
