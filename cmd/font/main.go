@@ -43,18 +43,21 @@ func main() {
 		os.Exit(1)
 	}
 
+	exitCode := 0
 	for _, filename := range os.Args[1:] {
 		file, err := os.Open(filename)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to open font: %s\n", err)
-			os.Exit(1)
+			exitCode = 1
+			continue
 		}
 		defer file.Close()
 
 		font, err := sfnt.Parse(file)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to parse font: %s\n", err)
-			os.Exit(1)
+			exitCode = 1
+			continue
 		}
 
 		if len(os.Args[1:]) > 1 {
@@ -62,7 +65,9 @@ func main() {
 		}
 		if err := cmds[command](font); err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
-			os.Exit(1)
+			exitCode = 1
+			continue
 		}
 	}
+	os.Exit(exitCode)
 }
