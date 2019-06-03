@@ -10,7 +10,7 @@ import (
 
 func usage() {
 	fmt.Println(`
-Usage: font [features|info|metrics|scrub|stats] font.[otf,ttf,woff,woff2]
+Usage: font [features|info|metrics|scrub|stats] font.[otf,ttf,woff,woff2] ...
 
 features: prints the gpos/gsub tables (contains font features)
 info: prints the name table (contains metadata)
@@ -39,26 +39,30 @@ func main() {
 	}
 
 	if len(os.Args) < 1 {
-		fmt.Fprintf(os.Stderr, "Usage: font %s <font file>\n", command)
+		fmt.Fprintf(os.Stderr, "Usage: font %s <font file> ...\n", command)
 		os.Exit(1)
 	}
 
-	filename := os.Args[1]
-	file, err := os.Open(filename)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to open font: %s\n", err)
-		os.Exit(1)
-	}
-	defer file.Close()
+	for _, filename := range os.Args[1:] {
+		file, err := os.Open(filename)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to open font: %s\n", err)
+			os.Exit(1)
+		}
+		defer file.Close()
 
-	font, err := sfnt.Parse(file)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to parse font: %s\n", err)
-		os.Exit(1)
-	}
+		font, err := sfnt.Parse(file)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to parse font: %s\n", err)
+			os.Exit(1)
+		}
 
-	if err := cmds[command](font); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
+		if len(os.Args[1:]) > 1 {
+			fmt.Println("==>", filename, "<==")
+		}
+		if err := cmds[command](font); err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
+		}
 	}
 }
