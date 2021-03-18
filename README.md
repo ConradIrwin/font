@@ -39,7 +39,7 @@ Still missing is support for parsing EOT files (which should be easy to add). Al
 Font file formats
 -----------------
 
-On the web there are four main types of font file, TrueType, OpenType, WOFF, WOFF2, and EOT. They all represent the same SFNT information, but are encoded slightly differently. You may also come across SVG fonts, which are a totally different beast.
+On the web there are five main types of font file, TrueType, OpenType, WOFF, WOFF2, and EOT. They all represent the same SFNT information, but are encoded slightly differently. You may also come across SVG fonts, which are a totally different beast.
 
 Inside one of these files, there are two main types of glyphs, TrueType and
 OpenType (also known as PostScript Type 2, or CFF). There are also a series of supporting
