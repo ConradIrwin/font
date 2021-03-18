@@ -88,6 +88,29 @@ type Lookup struct {
 	Flag uint16 // Lookup qualifiers.
 }
 
+// GSubString returns the Type as a readable entry.
+func (l Lookup) GSubString() string {
+	switch l.Type {
+	case 1:
+		return "GSUB_Single"
+	case 2:
+		return "GSUB_Multiple"
+	case 3:
+		return "GSUB_Alternate"
+	case 4:
+		return "GSUB_Ligature"
+	case 5:
+		return "GSUB_Context"
+	case 6:
+		return "GSUB_ChainingContext"
+	case 7:
+		return "GSUB_Extension"
+	case 8:
+		return "GSUB_ReverseChaining"
+	}
+	return strconv.Itoa(int(l.Type)) // this should not happen
+}
+
 // versionHeader is the beginning of on-disk format of the GPOS/GSUB version header.
 // See https://www.microsoft.com/typography/otspec/GPOS.htm
 // See https://www.microsoft.com/typography/otspec/GSUB.htm
@@ -132,11 +155,15 @@ type featureTable struct {
 }
 
 type lookupTable struct {
-	Type          uint16 // Different enumerations for GSUB and GPOS
-	Flag          uint16 // Lookup qualifiers
-	SubTableCount uint16 // Number of subtables for this lookup
-	// subtableOffsets[subTableCount] uint16 // Array of offsets to lookup subtables, from beginning of Lookup table
+	lookupTableInfo
+	subrecordOffsets []uint16 // Array of offsets to lookup subrecords, from beginning of Lookup table
 	// markFilteringSet uint16 // Index (base 0) into GDEF mark glyph sets structure. This field is only present if bit useMarkFilteringSet of lookup flags is set.
+}
+
+type lookupTableInfo struct {
+	Type           uint16 // Different enumerations for GSUB and GPOS
+	Flag           uint16 // Lookup qualifiers
+	SubRecordCount uint16 // Number of subrecords
 }
 
 type langSysTable struct {
@@ -322,17 +349,26 @@ func (t *TableLayout) parseFeatureList() error {
 
 // parseLookup parses a single Lookup table. b expected to be the beginning of LookupList.
 // See https://www.microsoft.com/typography/otspec/chapter2.htm#featTbl
-func (t *TableLayout) parseLookup(b []byte, record lookupRecord) (*Lookup, error) {
-	if int(record.Offset) >= len(b) {
+//
+// A lookup record starts with type and flag fields, followed by a count of
+// sub-tables.
+func (t *TableLayout) parseLookup(b []byte, offset uint16) (*Lookup, error) {
+	if int(offset) >= len(b) {
 		return nil, io.ErrUnexpectedEOF
 	}
-
-	r := bytes.NewReader(b[record.Offset:])
-
+	r := bytes.NewReader(b[offset:])
 	var lookup lookupTable
-	if err := binary.Read(r, binary.BigEndian, &lookup); err != nil {
-		return nil, fmt.Errorf("reading lookupTable: %s", err)
+	if err := binary.Read(r, binary.BigEndian, &lookup.lookupTableInfo); err != nil {
+		return nil, fmt.Errorf("reading lookupRecord: %s", err)
 	}
+	//fmt.Printf("lookup table (%d) has %d subtables\n", lookup.Type, lookup.SubRecordCount)
+	subs := make([]uint16, lookup.SubRecordCount, lookup.SubRecordCount)
+	if err := binary.Read(r, binary.BigEndian, &subs); err != nil {
+		return nil, fmt.Errorf("reading lookupRecord: %s", err)
+	}
+	lookup.subrecordOffsets = subs
+	// reading of lookup record is complete at this spot
+	// by converting it into a Lookup we lose information about sub-tables' location
 
 	// TODO Read lookup.Subtable
 	// TODO Read lookup.MarkFilteringSet
@@ -359,19 +395,22 @@ func (t *TableLayout) parseLookupList() error {
 		return fmt.Errorf("reading lookupCount: %s", err)
 	}
 
-	t.Lookups = nil
-	for i := 0; i < int(count); i++ {
-		var record lookupRecord
-		if err := binary.Read(r, binary.BigEndian, &record); err != nil {
-			return fmt.Errorf("reading lookupRecord[%d]: %s", i, err)
+	if count > 0 {
+		// first we read in an array of lookup record offsets, as described here:
+		// https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#lookup-list-table
+		//
+		lookupOffsets := make([]uint16, count, count)
+		if err := binary.Read(r, binary.BigEndian, &lookupOffsets); err != nil {
+			return fmt.Errorf("reading lookup offsets: %s", err)
 		}
-
-		lookup, err := t.parseLookup(b, record)
-		if err != nil {
-			return err
+		t.Lookups = nil
+		for i := 0; i < int(count); i++ {
+			lookup, err := t.parseLookup(b, lookupOffsets[i])
+			if err != nil {
+				return err
+			}
+			t.Lookups = append(t.Lookups, lookup)
 		}
-
-		t.Lookups = append(t.Lookups, lookup)
 	}
 
 	return nil
