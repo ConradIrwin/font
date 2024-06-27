@@ -3,10 +3,14 @@ package sfnt
 import (
 	"bytes"
 	"encoding/binary"
-	"io"
 )
 
-type tableOS2Fields struct {
+type v5Fields struct {
+	UsLowerPointSize uint16
+	UsUpperPointSize uint16
+}
+
+type v4Fields struct {
 	Version             uint16
 	XAvgCharWidth       uint16
 	USWeightClass       uint16
@@ -41,34 +45,38 @@ type tableOS2Fields struct {
 	UsDefaultChar       uint16
 	UsBreakChar         uint16
 	UsMaxContext        uint16
-	UsLowerPointSize    uint16
-	UsUpperPointSize    uint16
 }
 
 type TableOS2 struct {
 	baseTable
-	tableOS2Fields
+	v4Fields
+	v5Fields
 	bytes []byte
 }
 
 func parseTableOS2(tag Tag, buf []byte) (Table, error) {
 	r := bytes.NewBuffer(buf)
 
-	var table tableOS2Fields
-	if err := binary.Read(r, binary.BigEndian, &table); err != nil {
-		// Different versions of the table are different lengths, as such
-		// we may not already read every field.
-		if err != io.ErrUnexpectedEOF {
+	var v4fields v4Fields
+	var v5fields v5Fields
+	if err := binary.Read(r, binary.BigEndian, &v4fields); err != nil {
+		if err != nil {
 			return nil, err
 		}
-
-		// TODO Check the len(buf) is expected for this version
+	}
+	if v4fields.Version == 5 {
+		if err := binary.Read(r, binary.BigEndian, &v5fields); err != nil {
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	return &TableOS2{
-		baseTable:      baseTable(tag),
-		tableOS2Fields: table,
-		bytes:          buf,
+		baseTable: baseTable(tag),
+		v4Fields:  v4fields,
+		v5Fields:  v5fields,
+		bytes:     buf,
 	}, nil
 }
 

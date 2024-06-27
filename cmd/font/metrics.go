@@ -31,13 +31,13 @@ func Metrics(font *sfnt.Font) error {
 			return err
 		}
 
-		fmt.Printf("%#v\n", os2)
-
 		fmt.Println("Cap Height:", os2.SCapHeight)
 		fmt.Println("Typographic Ascender:", os2.STypoAscender)
 		fmt.Println("Typographic Descender:", os2.STypoDescender)
 		fmt.Println("Win Ascent:", os2.UsWinAscent)
 		fmt.Println("Win Descent:", os2.UsWinDescent)
+		fmt.Println("Width Class", os2.USWidthClass)
+		fmt.Println("Weight Class", os2.USWeightClass)
 
 		fmt.Println("TODO: SHOW MORE METRICS")
 	}
