@@ -236,10 +236,10 @@ func parseTableName(tag Tag, buf []byte) (Table, error) {
 			return nil, err
 		}
 
-		start := header.StringOffset + record.Offset
-		end := start + record.Length
+		start := int(header.StringOffset) + int(record.Offset)
+		end := start + int(record.Length)
 
-		if int(start) > len(table.bytes) || int(end) > len(table.bytes) {
+		if start >= len(table.bytes) || end >= len(table.bytes) {
 			return nil, io.ErrUnexpectedEOF
 		}
 
