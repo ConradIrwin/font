@@ -91,14 +91,15 @@ func readDirectoryEntryFast(r io.Reader, entry *directoryEntry) error {
 
 // parseOTF reads an OpenTyp (.otf) or TrueType (.ttf) file and returns a Font.
 // If parsing fails, then an error is returned and Font will be nil.
-func parseOTF(file File) (*Font, error) {
+func parseOTF(file, collection File) (*Font, error) {
 	var header otfHeader
 	if err := readOTFHeaderFast(file, &header); err != nil {
 		return nil, err
 	}
 
 	font := &Font{
-		file: file,
+		file:       file,
+		collection: collection,
 
 		scalerType: header.ScalerType,
 		tables:     make(map[Tag]*tableSection, header.NumTables),
