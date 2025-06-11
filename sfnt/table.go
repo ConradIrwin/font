@@ -55,8 +55,12 @@ func (font *Font) parseTable(s *tableSection) (Table, error) {
 			return nil, err
 		}
 	} else {
+		file := font.file
+		if font.collection != nil {
+			file = font.collection
+		}
 		buf = make([]byte, s.length, s.length)
-		if _, err := font.file.ReadAt(buf, int64(s.offset)); err != nil {
+		if _, err := file.ReadAt(buf, int64(s.offset)); err != nil {
 			return nil, err
 		}
 	}

@@ -38,7 +38,8 @@ var ErrMissingTable = errors.New("missing table")
 // exist. In particular, there's a big different between TrueType glyphs (usually .ttf)
 // and CFF/PostScript Type 2 glyphs (usually .otf)
 type Font struct {
-	file File
+	file       File
+	collection File
 
 	scalerType Tag
 	tables     map[Tag]*tableSection
@@ -205,6 +206,10 @@ type File interface {
 // Parse parses an OpenType, TrueType, WOFF, or WOFF2 file and returns a Font.
 // If parsing fails, an error is returned and *Font will be nil.
 func Parse(file File) (*Font, error) {
+	return parse(file, nil)
+}
+
+func parse(file, collection File) (*Font, error) {
 	magic, err := ReadTag(file)
 	if err != nil {
 		return nil, err
@@ -218,7 +223,7 @@ func Parse(file File) (*Font, error) {
 	case SignatureWOFF2:
 		return parseWOFF2(file)
 	case TypeTrueType, TypeOpenType, TypePostScript1, TypeAppleTrueType:
-		return parseOTF(file)
+		return parseOTF(file, collection)
 	default:
 		return nil, ErrUnsupportedFormat
 	}
