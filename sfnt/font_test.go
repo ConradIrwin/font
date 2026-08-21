@@ -165,6 +165,24 @@ func TestParseCollectionWithNonTTC(t *testing.T) {
 	file.Close()
 }
 
+// TestParseCollectionHugeNumFonts checks that a TrueType Collection header
+// declaring an absurd font count does not cause a huge up-front allocation.
+// Previously the parser did make([]*Font, header.NumFonts) before reading any
+// offset, so a 12-byte file could request tens of gigabytes and crash the
+// process with "runtime: out of memory".
+func TestParseCollectionHugeNumFonts(t *testing.T) {
+	var buf bytes.Buffer
+	buf.WriteString("ttcf")                   // magic
+	buf.Write([]byte{0x00, 0x01, 0x00, 0x00}) // version 1.0
+	buf.Write([]byte{0xff, 0xff, 0xff, 0xf0}) // numFonts ~= 4.29 billion
+	// No offset table follows, so the very first offset read must fail.
+
+	fonts, err := ParseCollection(bytes.NewReader(buf.Bytes()))
+	if err == nil {
+		t.Fatalf("ParseCollection(huge numFonts) err = nil, want error; got %d fonts", len(fonts))
+	}
+}
+
 // benchmarkParse tests the performance of a simple Parse.
 // Example run:
 //   go test -cpuprofile cpu.prof -benchmem -memprofile mem.prof -bench . -run=^$ -benchtime=30s github.com/ConradIrwin/font/sfnt

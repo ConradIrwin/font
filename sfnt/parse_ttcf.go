@@ -28,7 +28,11 @@ func parseTTCF(file File) ([]*Font, error) {
 		return nil, err
 	}
 
-	fonts := make([]*Font, header.NumFonts)
+	// header.NumFonts is an untrusted 32-bit value read straight from the file.
+	// Grow the slice as fonts are actually read instead of pre-allocating from
+	// the header, so a corrupt count can't force a huge allocation before any
+	// offset has been validated.
+	var fonts []*Font
 
 	for i := uint32(0); i < header.NumFonts; i++ {
 		var offset uint32
@@ -41,7 +45,7 @@ func parseTTCF(file File) ([]*Font, error) {
 		if err != nil {
 			return nil, err
 		}
-		fonts[i] = font
+		fonts = append(fonts, font)
 	}
 
 	return fonts, nil
